@@ -1,6 +1,6 @@
 {
   "name": "@codeguide/core",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Core package for code guidance with programmatic API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

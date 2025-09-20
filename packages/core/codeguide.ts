@@ -12,6 +12,7 @@ import {
   UsageService,
   RepositoryAnalysisService,
   TaskService,
+  ApiKeyEnhancedService,
 } from './services'
 import { APIServiceConfig, CodeGuideOptions } from './types'
 
@@ -21,6 +22,7 @@ export class CodeGuide {
   public usage: UsageService
   public repositoryAnalysis: RepositoryAnalysisService
   public tasks: TaskService
+  public apiKeyEnhanced: ApiKeyEnhancedService
   private options: CodeGuideOptions
 
   constructor(config: APIServiceConfig, options: CodeGuideOptions = {}) {
@@ -32,6 +34,7 @@ export class CodeGuide {
     this.usage = new UsageService(config)
     this.repositoryAnalysis = new RepositoryAnalysisService(config)
     this.tasks = new TaskService(config)
+    this.apiKeyEnhanced = new ApiKeyEnhancedService(config)
   }
 
   // Convenience method for backward compatibility

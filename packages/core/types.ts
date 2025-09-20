@@ -49,3 +49,39 @@ export interface CodeGuideOptions {
   context?: string
   verbose?: boolean
 }
+
+// API Key Enhanced Types
+export interface ApiKey {
+  id: string
+  name: string
+  prefix: string
+  created_at: string
+  last_used?: string
+  is_active: boolean
+  usage_count?: number
+}
+
+export interface CreateApiKeyRequest {
+  name: string
+}
+
+export interface CreateApiKeyResponse {
+  api_key: string
+  id: string
+  name: string
+  prefix: string
+  created_at: string
+  message: string
+}
+
+export interface ApiKeyPermission {
+  can_create: boolean
+  reason?: string
+  current_keys_count?: number
+  max_keys_allowed?: number
+}
+
+export interface RevokeApiKeyResponse {
+  message: string
+  revoked_key_id: string
+}

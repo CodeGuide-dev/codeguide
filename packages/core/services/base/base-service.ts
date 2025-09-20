@@ -35,6 +35,25 @@ export abstract class BaseService {
       return headers
     }
 
+    // Priority 2: Legacy API Key + User ID
+    if (this.config.apiKey && this.config.userId) {
+      headers['X-API-Key'] = this.config.apiKey
+      headers['X-User-ID'] = this.config.userId
+      return headers
+    }
+
+    // Priority 3: Clerk JWT Token
+    if (this.config.jwtToken) {
+      headers['Authorization'] = `Bearer ${this.config.jwtToken}`
+      return headers
+    }
+
+    // Fallback: Legacy API key without user ID
+    if (this.config.apiKey) {
+      headers['X-API-Key'] = this.config.apiKey
+      return headers
+    }
+
     return headers
   }
 

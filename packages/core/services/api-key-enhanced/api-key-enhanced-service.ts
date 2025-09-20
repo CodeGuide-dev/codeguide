@@ -3,8 +3,10 @@ import {
   ApiKey,
   CreateApiKeyRequest,
   CreateApiKeyResponse,
-  ApiKeyPermission,
+  ApiKeyPermissionResponse,
   RevokeApiKeyResponse,
+  ApiKeyListResponse,
+  ApiKeyResponse,
 } from '../../types'
 
 export class ApiKeyEnhancedService extends BaseService {
@@ -16,8 +18,8 @@ export class ApiKeyEnhancedService extends BaseService {
    * Get all API keys for the authenticated user
    * GET /api-key-enhanced/
    */
-  async getAllApiKeys(): Promise<ApiKey[]> {
-    return this.get<ApiKey[]>('/api-key-enhanced/')
+  async getAllApiKeys(): Promise<ApiKeyListResponse> {
+    return this.get<ApiKeyListResponse>('/api-key-enhanced/')
   }
 
   /**
@@ -40,32 +42,32 @@ export class ApiKeyEnhancedService extends BaseService {
    * Check if user can create API keys
    * GET /api-key-enhanced/check-permission
    */
-  async checkApiKeyPermission(): Promise<ApiKeyPermission> {
-    return this.get<ApiKeyPermission>('/api-key-enhanced/check-permission')
+  async checkApiKeyPermission(): Promise<ApiKeyPermissionResponse> {
+    return this.get<ApiKeyPermissionResponse>('/api-key-enhanced/check-permission')
   }
 
   /**
    * Get API key details by ID
    * GET /api-key-enhanced/{api_key_id}
    */
-  async getApiKeyById(apiKeyId: string): Promise<ApiKey> {
-    return this.get<ApiKey>(`/api-key-enhanced/${apiKeyId}`)
+  async getApiKeyById(apiKeyId: string): Promise<ApiKeyResponse> {
+    return this.get<ApiKeyResponse>(`/api-key-enhanced/${apiKeyId}`)
   }
 
   /**
    * Update API key name (if supported by API)
    * PUT /api-key-enhanced/{api_key_id}
    */
-  async updateApiKeyName(apiKeyId: string, name: string): Promise<ApiKey> {
-    return this.put<ApiKey>(`/api-key-enhanced/${apiKeyId}`, { name })
+  async updateApiKeyName(apiKeyId: string, name: string): Promise<ApiKeyResponse> {
+    return this.put<ApiKeyResponse>(`/api-key-enhanced/${apiKeyId}`, { name })
   }
 
   /**
    * Toggle API key active status (if supported by API)
    * PATCH /api-key-enhanced/{api_key_id}/toggle
    */
-  async toggleApiKeyStatus(apiKeyId: string): Promise<ApiKey> {
-    return this.post<ApiKey>(`/api-key-enhanced/${apiKeyId}/toggle`, {})
+  async toggleApiKeyStatus(apiKeyId: string): Promise<ApiKeyResponse> {
+    return this.post<ApiKeyResponse>(`/api-key-enhanced/${apiKeyId}/toggle`, {})
   }
 
   /**
@@ -73,9 +75,12 @@ export class ApiKeyEnhancedService extends BaseService {
    * GET /api-key-enhanced/{api_key_id}/usage
    */
   async getApiKeyUsage(apiKeyId: string): Promise<{
-    usage_count: number
-    last_used?: string
-    daily_usage?: Array<{ date: string; count: number }>
+    status: string
+    data: {
+      usage_count: number
+      last_used?: string
+      daily_usage?: Array<{ date: string; count: number }>
+    }
   }> {
     return this.get(`/api-key-enhanced/${apiKeyId}/usage`)
   }

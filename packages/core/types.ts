@@ -53,12 +53,19 @@ export interface CodeGuideOptions {
 // API Key Enhanced Types
 export interface ApiKey {
   id: string
+  key: string
+  user_id: string
   name: string
-  prefix: string
   created_at: string
-  last_used?: string
+  expires_at?: string
   is_active: boolean
-  usage_count?: number
+  metadata?: Record<string, any>
+}
+
+// API Response wrapper
+export interface ApiKeyListResponse {
+  status: string
+  data: ApiKey[]
 }
 
 export interface CreateApiKeyRequest {
@@ -66,22 +73,36 @@ export interface CreateApiKeyRequest {
 }
 
 export interface CreateApiKeyResponse {
-  api_key: string
-  id: string
-  name: string
-  prefix: string
-  created_at: string
-  message: string
+  status: string
+  data: {
+    api_key: string
+    id: string
+    name: string
+    created_at: string
+    expires_at?: string
+    is_active: boolean
+    metadata?: Record<string, any>
+  }
+  message?: string
 }
 
-export interface ApiKeyPermission {
-  can_create: boolean
-  reason?: string
-  current_keys_count?: number
-  max_keys_allowed?: number
+export interface ApiKeyPermissionResponse {
+  status: string
+  data: {
+    can_create: boolean
+    reason?: string
+    current_keys_count?: number
+    max_keys_allowed?: number
+  }
+}
+
+export interface ApiKeyResponse {
+  status: string
+  data: ApiKey
 }
 
 export interface RevokeApiKeyResponse {
+  status: string
   message: string
-  revoked_key_id: string
+  revoked_key_id?: string
 }

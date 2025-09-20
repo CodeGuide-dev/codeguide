@@ -1,92 +1,108 @@
 export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
-  project_documents: ProjectDocument[];
-  category?: Category;
-  codie_tool?: CodieTool;
-  github_url?: string;
-  status?: string;
-  tools_selected?: string[];
-  ai_questionaire?: Record<string, any>;
-  project_outline?: Record<string, any>;
+  id: string
+  title: string
+  description: string
+  user_id: string
+  created_at: string
+  updated_at: string
+  project_documents: ProjectDocument[]
+  category?: Category
+  codie_tool?: CodieTool
+  github_url?: string
+  status?: string
+  tools_selected?: string[]
+  ai_questionaire?: Record<string, any>
+  project_outline?: Record<string, any>
 }
 
 export interface ProjectDocument {
-  id: string;
-  project_id: string;
-  document_type: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  created_at: string
+  updated_at: string | null
+  project_id: string
+  user_id: string
+  title: string
+  document_type: string
+  description: string | null
+  content: string
+  custom_document_type: string
+  last_action: string
+  is_current_version: boolean
+  status: string
+}
+
+export interface GetProjectDocumentsRequest {
+  current_version_only?: boolean
+}
+
+export interface GetProjectDocumentsResponse {
+  status: string
+  data: ProjectDocument[]
 }
 
 export interface Category {
-  id: string;
-  name: string;
-  description?: string;
+  id: string
+  name: string
+  description?: string
 }
 
 export interface CodieTool {
-  id: string;
-  name: string;
-  description?: string;
-  category?: string;
+  id: string
+  name: string
+  description?: string
+  category?: string
 }
 
 export interface CreateProjectRequest {
-  title: string;
-  description: string;
-  category_id?: string;
-  codie_tool_id?: string;
-  tools_selected?: string[];
-  ai_questionaire?: Record<string, any>;
-  project_outline?: Record<string, any>;
-  github_url?: string;
+  title: string
+  description: string
+  category_id?: string
+  codie_tool_id?: string
+  tools_selected?: string[]
+  ai_questionaire?: Record<string, any>
+  project_outline?: Record<string, any>
+  github_url?: string
 }
 
 export interface UpdateProjectRequest {
-  title?: string;
-  description?: string;
-  category_id?: string;
-  codie_tool_id?: string;
-  tools_selected?: string[];
-  ai_questionaire?: Record<string, any>;
-  project_outline?: Record<string, any>;
-  github_url?: string;
-  status?: string;
+  title?: string
+  description?: string
+  category_id?: string
+  codie_tool_id?: string
+  tools_selected?: string[]
+  ai_questionaire?: Record<string, any>
+  project_outline?: Record<string, any>
+  github_url?: string
+  status?: string
 }
 
 export interface ProjectListResponse {
-  status: string;
-  data: Project[];
+  status: string
+  data: Project[]
 }
 
 export interface ProjectResponse {
-  status: string;
-  data: Project;
+  status: string
+  data: Project
 }
 
 export interface PaginatedProjectsRequest {
-  page?: number;
-  page_size?: number;
-  search_query?: string;
-  status?: string;
-  start_date?: string;
-  end_date?: string;
-  sort_by_date?: 'asc' | 'desc';
+  page?: number
+  page_size?: number
+  search_query?: string
+  status?: string
+  start_date?: string
+  end_date?: string
+  sort_by_date?: 'asc' | 'desc'
 }
 
 export interface PaginatedProjectsResponse {
-  status: string;
-  data: Project[];
+  status: string
+  data: Project[]
   pagination: {
-    total: number;
-    page: number;
-    page_size: number;
-    total_pages: number;
-  };
+    total: number
+    page: number
+    page_size: number
+    total_pages: number
+  }
 }

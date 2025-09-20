@@ -173,7 +173,7 @@ my-project/
 
 ### Environment Variables
 
-- `CODEGUIDE_API_URL`: API base URL (default: http://api.codeguide.dev)
+- `CODEGUIDE_API_URL`: API base URL (default: https://api.codeguide.dev)
 - `CODEGUIDE_API_KEY`: API key for authentication
 
 ### Authentication
@@ -258,7 +258,7 @@ codeguide/
 ### Programmatic Usage
 
 ```typescript
-import { CodeGuide } from '@codeguide/core';
+import { CodeGuide } from '@codeguide/core'
 
 const codeguide = new CodeGuide(
   {
@@ -269,22 +269,22 @@ const codeguide = new CodeGuide(
     language: 'typescript',
     verbose: true,
   }
-);
+)
 
 // Check health
-const isHealthy = await codeguide.isHealthy();
+const isHealthy = await codeguide.isHealthy()
 
 // Generate project title
 const title = await codeguide.generation.generateTitle({
   description: 'A React app with TypeScript',
-});
+})
 
 // Generate project outline
 const outline = await codeguide.generation.generateOutline({
   project_type: 'react',
   description: 'A React app with TypeScript',
   title: title.title,
-});
+})
 ```
 
 ### Core Services
@@ -325,6 +325,7 @@ codeguide usage summary --start-date 2024-01-01 --end-date 2024-12-31
 ### Common Issues
 
 1. **Authentication Failed**
+
    ```bash
    # Check your API key
    codeguide login --api-key your-api-key
@@ -338,6 +339,7 @@ codeguide usage summary --start-date 2024-01-01 --end-date 2024-12-31
    - Check your subscription status
 
 3. **Build Errors**
+
    ```bash
    # Clean build
    npm run build
@@ -368,6 +370,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Changelog
 
 ### v0.0.1
+
 - Initial release
 - Project creation with AI-generated documentation
 - Task management system

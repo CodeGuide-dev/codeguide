@@ -78,22 +78,22 @@ Base class providing common functionality:
 ## Usage Example
 
 ```typescript
-import { CodeGuide, APIServiceConfig } from '@codeguide/core';
+import { CodeGuide, APIServiceConfig } from '@codeguide/core'
 
 const config: APIServiceConfig = {
   baseUrl: 'https://api.codeguide.app',
   apiKey: 'your-api-key',
   userId: 'your-user-id',
-};
+}
 
-const codeguide = new CodeGuide(config);
+const codeguide = new CodeGuide(config)
 
 // Use different services
-const projects = await codeguide.projects.getAllProjects();
-const creditBalance = await codeguide.usage.getCreditBalance();
+const projects = await codeguide.projects.getAllProjects()
+const creditBalance = await codeguide.usage.getCreditBalance()
 const refinedPrompt = await codeguide.generation.refinePrompt({
   user_prompt: 'How do I create a React component?',
-});
+})
 ```
 
 ## Configuration
@@ -103,7 +103,7 @@ All services accept the same configuration:
 - `baseUrl`: API base URL (defaults to https://api.codeguide.app)
 - `apiKey`: API key for authentication
 - `userId`: User ID for authentication
-- `timeout`: Request timeout (default: 30000ms)
+- `timeout`: Request timeout (default: 3600000ms / 1 hour)
 
 ## Authentication
 

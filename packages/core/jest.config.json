@@ -1,0 +1,19 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "roots": ["<rootDir>"],
+  "testMatch": ["**/__tests__/**/*.test.ts"],
+  "transform": {
+    "^.+\\.ts$": "ts-jest"
+  },
+  "collectCoverageFrom": [
+    "**/*.ts",
+    "!**/*.d.ts",
+    "!**/index.ts",
+    "!**/node_modules/**",
+    "!**/__tests__/**"
+  ],
+  "coverageDirectory": "coverage",
+  "coverageReporters": ["text", "lcov"],
+  "setupFilesAfterEnv": ["<rootDir>/../../jest.setup.js"]
+}

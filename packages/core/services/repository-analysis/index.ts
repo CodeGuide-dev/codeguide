@@ -1,2 +1,2 @@
-export { RepositoryAnalysisService } from './repository-service';
-export * from './repository-types';
+export { RepositoryAnalysisService } from './repository-service'
+export * from './repository-types'

@@ -1,2 +1,2 @@
-export { GenerationService } from './generation-service';
-export * from './generation-types';
+export { GenerationService } from './generation-service'
+export * from './generation-types'

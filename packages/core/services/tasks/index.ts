@@ -1,2 +1,2 @@
-export { TaskService } from './task-service';
-export * from './task-types';
+export { TaskService } from './task-service'
+export * from './task-types'

@@ -1,0 +1,20 @@
+{
+  "name": "codeguide-example",
+  "version": "1.0.0",
+  "description": "Example project using codeguide-cli in development mode",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["example", "codeguide"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@codeguide/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

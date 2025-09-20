@@ -1,70 +1,88 @@
-# CodeGuide CLI
+# CodeGuide
 
-A modern CLI tool for AI-powered code guidance and project management. Create new projects, generate documentation, and manage development tasks with intelligent AI assistance.
+A comprehensive toolkit for AI-powered code guidance and project management. Includes both a CLI tool and a programmatic API for seamless integration into your development workflow.
 
-## Features
+## Packages
 
-- **🚀 Project Creation**: Create new projects with AI-generated structure and documentation
-- **📝 Documentation Generation**: Automatically generate project documentation
-- **🎯 Task Management**: AI-powered task creation and tracking
-- **🔧 Authentication**: Secure API key management
-- **📊 Usage Tracking**: Monitor API usage and credits
-- **⚡ TypeScript**: Full type safety and IntelliSense support
-- **🎨 Interactive Mode**: User-friendly command-line interface
+### 🔧 [@codeguide/cli](packages/cli/README.md) - Command Line Interface
 
-## Installation
+A powerful CLI tool for code guidance with full project management capabilities.
 
-### Global Installation (Recommended)
+**Features:**
+- Project creation and initialization
+- Task management and tracking
+- API key management
+- Usage analytics and monitoring
+- Repository analysis
+- Interactive command-line interface
 
+**Installation:**
 ```bash
 npm install -g @codeguide/cli
 ```
 
-### Development Installation
+### 📚 [@codeguide/core](packages/core/README.md) - Programmatic API
 
+The core package with TypeScript interfaces and services for integrating CodeGuide into your applications.
+
+**Features:**
+- Full TypeScript support with IntelliSense
+- API key management (CRUD operations)
+- Project management services
+- Task management APIs
+- Usage analytics
+- Multiple authentication methods
+
+**Installation:**
 ```bash
-git clone https://github.com/CodeGuide-dev/codeguide.git
-cd codeguide
-npm install
-npm run build
+npm install @codeguide/core
 ```
 
 ## Quick Start
 
-### 1. Login
+### CLI Usage
 
 ```bash
-codeguide login --api-key your-api-key
-```
+# Install CLI
+npm install -g @codeguide/cli
 
-### 2. Create a New Project
+# Authenticate
+export CODEGUIDE_DATABASE_API_KEY="sk_your_key"
 
-```bash
-# Interactive mode
-codeguide start
+# Create a new project
+codeguide init my-project
 
-# With prompt
-codeguide start "Create a React app with TypeScript and Tailwind CSS"
-
-# In current directory
-codeguide start --current-codebase
-```
-
-### 3. View and Manage Tasks
-
-```bash
-# List all tasks
+# View and manage tasks
 codeguide task list
-
-# Start working on a task
 codeguide task start <task_id>
-
-# Update task progress
-codeguide task update <task_id> "Completed authentication module"
-
-# Mark task as completed
-codeguide task update <task_id> --status completed
+codeguide task update <task_id> "Progress notes"
 ```
+
+### Programmatic Usage
+
+```typescript
+// Install core package
+npm install @codeguide/core
+
+import { CodeGuide } from '@codeguide/core'
+
+const codeguide = new CodeGuide({
+  baseUrl: 'https://api.codeguide.ai',
+  databaseApiKey: 'sk_your_key'
+})
+
+// Create API key
+const newKey = await codeguide.apiKeyEnhanced.createApiKey({
+  name: 'My Application'
+})
+```
+
+## Documentation
+
+| Package | Description | Link |
+|---------|-------------|------|
+| **CLI** | Command-line interface with full documentation | [README](packages/cli/README.md) |
+| **Core** | Programmatic API with TypeScript support | [README](packages/core/README.md) |
 
 ## Commands
 

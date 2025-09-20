@@ -14,6 +14,7 @@ export { UsageService } from './usage'
 export { RepositoryAnalysisService } from './repository-analysis'
 export { TaskService } from './tasks'
 export { ApiKeyEnhancedService } from './api-key-enhanced'
+export { SubscriptionService } from './subscriptions'
 
 // Re-export all types for convenience
 export * from './generation'
@@ -22,3 +23,4 @@ export * from './usage'
 export * from './repository-analysis'
 export * from './tasks'
 export * from './api-key-enhanced'
+export * from './subscriptions'

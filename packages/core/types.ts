@@ -106,3 +106,73 @@ export interface RevokeApiKeyResponse {
   message: string
   revoked_key_id?: string
 }
+
+// Subscription Types
+export interface Subscription {
+  id: string
+  user_id: string
+  status: 'active' | 'canceled' | 'past_due' | 'unpaid' | 'trialing' | 'incomplete' | 'incomplete_expired'
+  metadata: Record<string, any>
+  price_id: string
+  quantity: number
+  cancel_at_period_end: boolean
+  created: string
+  current_period_start: string
+  current_period_end: string
+  ended_at?: string | null
+  cancel_at?: string | null
+  canceled_at?: string | null
+  trial_start?: string | null
+  trial_end?: string | null
+  org_id?: string | null
+}
+
+export interface Product {
+  id: string
+  active: boolean
+  name: string
+  description: string
+  image: string
+  metadata: Record<string, any>
+  marketing_features: string[]
+  live_mode: boolean
+  is_team_plan: boolean
+}
+
+export interface Price {
+  id: string
+  product_id: string
+  active: boolean
+  description: string
+  unit_amount: number
+  currency: string
+  type: 'recurring' | 'one_time'
+  interval: 'day' | 'week' | 'month' | 'year'
+  interval_count: number
+  trial_period_days?: number | null
+  metadata?: Record<string, any> | null
+}
+
+export interface CurrentSubscriptionResponse {
+  status: string
+  data: {
+    subscription: Subscription
+    product: Product
+    price: Price
+  }
+}
+
+export interface UserSubscriptionsResponse {
+  status: string
+  data: Subscription[]
+}
+
+export interface CancelSubscriptionRequest {
+  cancel_at_period_end: boolean
+}
+
+export interface CancelSubscriptionResponse {
+  status: string
+  message: string
+  data: Subscription
+}

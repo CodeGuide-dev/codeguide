@@ -1,6 +1,6 @@
 {
   "name": "codeguide",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A CLI tool for code guidance with programmatic API",
   "private": true,
   "workspaces": [

@@ -373,7 +373,7 @@ export function createCommands(program: Command): void {
     .option(
       '--api-url <url>',
       'API URL',
-      process.env.CODEGUIDE_API_URL || 'http://api.codeguide.dev'
+      process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
     )
     .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
     .option(
@@ -680,7 +680,7 @@ export function createCommands(program: Command): void {
           // Show API request details in verbose mode
           if (options.verbose) {
             console.log('📤 API Request Details:')
-            console.log('   Endpoint: /projects/create-project')
+            console.log('   Endpoint: /projects')
             console.log('   Title:', projectTitle)
             console.log('   Description Length:', finalPrompt.length, 'characters')
             console.log('   Outline Length:', projectOutline.length, 'characters')
@@ -1054,7 +1054,7 @@ ${doc.content}
     .option(
       '--api-url <url>',
       'API URL',
-      process.env.CODEGUIDE_API_URL || 'http://api.codeguide.dev'
+      process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
     )
     .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
     .action(async options => {
@@ -1171,7 +1171,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
     .option(
       '--api-url <url>',
       'API URL',
-      process.env.CODEGUIDE_API_URL || 'http://api.codeguide.dev'
+      process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
     )
     .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
     .action(async options => {
@@ -1204,7 +1204,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
     .option(
       '--api-url <url>',
       'API URL',
-      process.env.CODEGUIDE_API_URL || 'http://api.codeguide.dev'
+      process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
     )
     .action(async options => {
       try {
@@ -1309,7 +1309,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
     .option(
       '--api-url <url>',
       'API URL',
-      process.env.CODEGUIDE_API_URL || 'http://api.codeguide.dev'
+      process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
     )
     .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
 
@@ -1976,7 +1976,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
     .option(
       '--api-url <url>',
       'API URL',
-      process.env.CODEGUIDE_API_URL || 'http://api.codeguide.dev'
+      process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
     )
     .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
     .action(async options => {

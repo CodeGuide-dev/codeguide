@@ -139,7 +139,7 @@ describe('CLI Commands', () => {
 
       expect(CodeGuide).toHaveBeenCalledWith(
         {
-          baseUrl: 'http://api.codeguide.dev',
+          baseUrl: 'https://api.codeguide.dev',
           databaseApiKey: 'sk_test123',
         },
         {
@@ -272,7 +272,7 @@ describe('CLI Commands', () => {
 
       expect(CodeGuide).toHaveBeenCalledWith(
         {
-          baseUrl: 'http://api.codeguide.dev',
+          baseUrl: 'https://api.codeguide.dev',
           databaseApiKey: 'sk_test123',
         },
         {
@@ -414,7 +414,7 @@ describe('CLI Commands', () => {
       await program.parseAsync(['node', 'test', 'health'])
 
       expect(CodeGuide).toHaveBeenCalledWith({
-        baseUrl: 'http://api.codeguide.dev',
+        baseUrl: 'https://api.codeguide.dev',
         databaseApiKey: undefined,
       })
 
@@ -665,7 +665,7 @@ describe('CLI Commands', () => {
 
         expect(authStorage.saveAuthConfig).toHaveBeenCalledWith({
           apiKey: 'sk_test123',
-          apiUrl: 'http://api.codeguide.dev',
+          apiUrl: 'https://api.codeguide.dev',
         })
         expect(consoleSpy).toHaveBeenCalledWith('📋 Using API key from environment variable')
         expect(consoleSpy).toHaveBeenCalledWith('✅ API key saved successfully!')
@@ -686,7 +686,7 @@ describe('CLI Commands', () => {
 
         expect(authStorage.saveAuthConfig).toHaveBeenCalledWith({
           apiKey: 'sk_env_key_123',
-          apiUrl: 'http://api.codeguide.dev',
+          apiUrl: 'https://api.codeguide.dev',
         })
         expect(consoleSpy).toHaveBeenCalledWith('📋 Using API key from environment variable')
 
@@ -824,7 +824,7 @@ describe('CLI Commands', () => {
 
       expect(CodeGuide).toHaveBeenCalledWith(
         {
-          baseUrl: 'http://api.codeguide.dev',
+          baseUrl: 'https://api.codeguide.dev',
           databaseApiKey: 'sk_saved_key',
         },
         expect.any(Object)
@@ -1170,7 +1170,7 @@ describe('CLI Commands', () => {
       // Verify the CodeGuide was created with saved API key
       expect(CodeGuide).toHaveBeenCalledWith(
         {
-          baseUrl: 'http://api.codeguide.dev',
+          baseUrl: 'https://api.codeguide.dev',
           databaseApiKey: 'sk_saved_key',
         },
         expect.any(Object)

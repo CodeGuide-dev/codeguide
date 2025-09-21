@@ -15,6 +15,7 @@ export { RepositoryAnalysisService } from './repository-analysis'
 export { TaskService } from './tasks'
 export { ApiKeyEnhancedService } from './api-key-enhanced'
 export { SubscriptionService } from './subscriptions'
+export { CancellationFunnelService } from './cancellation-funnel'
 
 // Re-export all types for convenience
 export * from './generation'
@@ -24,3 +25,4 @@ export * from './repository-analysis'
 export * from './tasks'
 export * from './api-key-enhanced'
 export * from './subscriptions'
+export * from './cancellation-funnel'

@@ -176,3 +176,65 @@ export interface CancelSubscriptionResponse {
   message: string
   data: Subscription
 }
+
+// Cancellation Funnel Types
+export interface CancellationFunnelInitiateRequest {
+  subscription_id: string
+}
+
+export interface CancellationFunnelInitiateResponse {
+  status: string
+  message: string
+  data: {
+    funnel_id: string
+    subscription_id: string
+    current_step: 'initiated'
+    created_at: string
+    available_offers: string[]
+  }
+}
+
+export interface CancellationFunnelPauseOfferRequest {
+  subscription_id: string
+  action: 'accepted' | 'declined'
+  pause_duration_months?: number
+}
+
+export interface CancellationFunnelPauseOfferResponse {
+  status: string
+  message: string
+  data: {
+    funnel_id: string
+    subscription_id: string
+    pause_offer: {
+      action: 'accepted' | 'declined'
+      pause_duration_months?: number
+      pause_start_date?: string
+      pause_end_date?: string
+    }
+    next_step: string
+  }
+}
+
+export interface CancellationFunnelSurveyRequest {
+  subscription_id: string
+  reason: string
+  feedback?: string
+  competitor_name?: string
+}
+
+export interface CancellationFunnelSurveyResponse {
+  status: string
+  message: string
+  data: {
+    funnel_id: string
+    subscription_id: string
+    survey_response: {
+      reason: string
+      feedback?: string
+      competitor_name?: string
+      submitted_at: string
+    }
+    next_step: string
+  }
+}

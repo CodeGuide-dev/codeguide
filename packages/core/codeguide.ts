@@ -14,6 +14,7 @@ import {
   TaskService,
   ApiKeyEnhancedService,
   SubscriptionService,
+  CancellationFunnelService,
 } from './services'
 import { APIServiceConfig, CodeGuideOptions } from './types'
 
@@ -25,6 +26,7 @@ export class CodeGuide {
   public tasks: TaskService
   public apiKeyEnhanced: ApiKeyEnhancedService
   public subscription: SubscriptionService
+  public cancellationFunnel: CancellationFunnelService
   private options: CodeGuideOptions
 
   constructor(config: APIServiceConfig, options: CodeGuideOptions = {}) {
@@ -38,6 +40,7 @@ export class CodeGuide {
     this.tasks = new TaskService(config)
     this.apiKeyEnhanced = new ApiKeyEnhancedService(config)
     this.subscription = new SubscriptionService(config)
+    this.cancellationFunnel = new CancellationFunnelService(config)
   }
 
   // Convenience method for backward compatibility

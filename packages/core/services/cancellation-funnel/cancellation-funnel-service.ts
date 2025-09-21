@@ -132,7 +132,7 @@ export class CancellationFunnelService extends BaseService {
     }
   }> {
     return this.post(`/cancellation-funnel/${subscriptionId}/complete`, {
-      final_action,
+      final_action: finalAction,
     })
   }
 

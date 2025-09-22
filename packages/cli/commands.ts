@@ -404,6 +404,8 @@ export function createCommands(program: Command): void {
           console.error('💡 Please login again to save your API key:')
           console.error('   codeguide login --api-key YOUR_API_KEY')
           console.error('   or use --api-key option to provide an API key')
+          console.error('')
+          console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
           process.exit(1)
         }
 
@@ -1092,6 +1094,8 @@ ${doc.content}
           console.error('💡 Please login again to save your API key:')
           console.error('   codeguide login --api-key YOUR_API_KEY')
           console.error('   or use --api-key option to provide an API key')
+          console.error('')
+          console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
           process.exit(1)
         }
 
@@ -1232,6 +1236,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
 
         if (!apiKey) {
           console.error('❌ Error: API key is required')
+          console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
           process.exit(1)
         }
 
@@ -1288,6 +1293,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
           if (!authStorage.hasAuthConfig()) {
             console.log('🔓 No API key configured')
             console.log('💡 Use "codeguide login" to save your API key')
+            console.log('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
           } else {
             console.log('🔒 API Key Status:')
             console.log(authStorage.getAuthInfo())
@@ -1934,6 +1940,339 @@ Format the documentation in Markdown with proper headers, code examples, and str
         console.log('   • Use "codeguide task list" to manage project tasks')
       } catch (error) {
         console.error('❌ Failed to initialize CodeGuide CLI')
+
+        // Enhanced error logging
+        if (error && typeof error === 'object' && 'response' in error) {
+          const apiError = error as any
+          console.error('🔍 API Error Details:')
+          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
+          console.error('   URL:', apiError.config?.url || 'Unknown')
+          console.error('   Method:', apiError.config?.method || 'Unknown')
+
+          if (apiError.response?.data) {
+            console.error('   Response Data:', JSON.stringify(apiError.response.data, null, 2))
+          }
+
+          if (apiError.message) {
+            console.error('   Error Message:', apiError.message)
+          }
+        } else if (error instanceof Error) {
+          console.error('🔍 Error Details:')
+          console.error('   Type:', error.constructor.name)
+          console.error('   Message:', error.message)
+          if (options.verbose && error.stack) {
+            console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
+          }
+        } else {
+          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+        }
+
+        process.exit(1)
+      }
+    })
+
+  program
+    .command('docs')
+    .description('Set up documentation from a project ID')
+    .argument('<project_id>', 'Project ID to download documentation from')
+    .option('-d, --directory <directory>', 'Target directory (default: interactive prompt)')
+    .option('-v, --verbose', 'Verbose output')
+    .option(
+      '--api-url <url>',
+      'API URL',
+      process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
+    )
+    .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
+    .action(async (projectId, options) => {
+      try {
+        const currentDir = process.cwd()
+        let targetDir: string
+        let useCurrentDirectory = false
+
+        if (options.verbose) {
+          console.log('🔍 Documentation Setup Details:')
+          console.log('   Project ID:', projectId)
+          console.log('   Current Directory:', currentDir)
+        }
+
+        // Determine target directory
+        if (options.directory) {
+          // Use specified directory from command line
+          targetDir = options.directory
+          useCurrentDirectory = targetDir === currentDir
+          if (options.verbose) {
+            console.log('📁 Using specified directory:', targetDir)
+          }
+        } else {
+          // For interactive mode, we need to get project info first to ask the question
+          // Get saved credentials
+          const savedConfig = authStorage.getAuthConfig()
+
+          // Check authentication
+          const authApiKey = options.apiKey || savedConfig.apiKey
+          if (!authApiKey) {
+            console.error('❌ Error: No API key found')
+            console.error('💡 Please login again to save your API key:')
+            console.error('   codeguide login --api-key YOUR_API_KEY')
+            console.error('   or use --api-key option to provide an API key')
+            console.error('')
+            console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+            process.exit(1)
+          }
+
+          const tempCodeguide = new CodeGuide({
+            baseUrl: options.apiUrl || savedConfig.apiUrl,
+            databaseApiKey: authApiKey,
+          })
+
+          // Get project information for directory naming
+          try {
+            const projectInfo = await tempCodeguide.projects.getProjectById(projectId)
+            console.log('📋 Project Title:', projectInfo.title)
+            console.log('📄 Project Description:', projectInfo.description.substring(0, 100) + '...')
+
+            // Interactive mode - ask user where they want to save docs
+            console.log('')
+            const readline = require('readline')
+            const rl = readline.createInterface({
+              input: process.stdin,
+              output: process.stdout,
+            })
+
+            const answer = await new Promise<string>(resolve => {
+              rl.question(
+                '📄 Do you want to add the docs to the current directory? (y/N): ',
+                (answer: string) => {
+                  rl.close()
+                  resolve(answer.trim().toLowerCase())
+                }
+              )
+            })
+
+            useCurrentDirectory = answer === 'y' || answer === 'yes'
+
+            if (useCurrentDirectory) {
+              targetDir = currentDir
+              console.log('📁 Using current directory:', targetDir)
+            } else {
+              // Create safe directory name from project title
+              const safeDirName = toSafeDirectoryName(projectInfo.title)
+              const uniqueDirName = createUniqueDirectory(currentDir, safeDirName)
+              targetDir = path.join(currentDir, uniqueDirName)
+              console.log('📁 Creating new directory:', targetDir)
+            }
+          } catch (error) {
+            console.error('❌ Failed to fetch project information')
+            console.error('💡 Please verify the project ID is correct')
+            throw error
+          }
+        }
+
+        // Validate target directory
+        const validation = validateDirectory(targetDir)
+        if (!validation.valid) {
+          console.error('❌ Error:', validation.error)
+          process.exit(1)
+        }
+
+        // Create target directory if it doesn't exist (for new directory mode)
+        if (!useCurrentDirectory && !fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true })
+          console.log(`✅ Created target directory: ${targetDir}`)
+        }
+
+        // For non-interactive mode (when directory is specified), we need to authenticate and get project info
+        let project
+        if (options.directory) {
+          // Get saved credentials
+          const savedConfig = authStorage.getAuthConfig()
+
+          // Check authentication
+          const authApiKey = options.apiKey || savedConfig.apiKey
+          if (!authApiKey) {
+            console.error('❌ Error: No API key found')
+            console.error('💡 Please login again to save your API key:')
+            console.error('   codeguide login --api-key YOUR_API_KEY')
+            console.error('   or use --api-key option to provide an API key')
+            console.error('')
+            console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+            process.exit(1)
+          }
+
+          const codeguide = new CodeGuide({
+            baseUrl: options.apiUrl || savedConfig.apiUrl,
+            databaseApiKey: authApiKey,
+          })
+
+          console.log('🔐 Checking authentication...')
+          const isHealthy = await codeguide.isHealthy()
+          if (!isHealthy) {
+            console.error('❌ Error: Authentication failed or API service is not available')
+            console.error('💡 Please login again with a valid API key:')
+            console.error('   codeguide login')
+            process.exit(1)
+          }
+
+          console.log('✅ Authentication successful')
+
+          // Get project information
+          try {
+            project = await withLoadingAnimation(
+              async () => {
+                const response = await codeguide.projects.getProjectById(projectId)
+                return response
+              },
+              'Fetching project information...',
+              'Project information retrieved',
+              'Failed to fetch project information'
+            )
+          } catch (error) {
+            console.error('❌ Failed to fetch project information')
+            console.error('💡 Please verify the project ID is correct')
+            throw error
+          }
+
+          console.log('📋 Project Title:', project.title)
+          console.log('📄 Project Description:', project.description.substring(0, 100) + '...')
+        }
+
+        console.log('📄 Setting up documentation from project...')
+        console.log('📝 Project ID:', projectId)
+
+        // Get saved credentials for the main operations
+        const savedConfig = authStorage.getAuthConfig()
+
+        // Check authentication
+        const authApiKey = options.apiKey || savedConfig.apiKey
+        if (!authApiKey) {
+          console.error('❌ Error: No API key found')
+          console.error('💡 Please login again to save your API key:')
+          console.error('   codeguide login --api-key YOUR_API_KEY')
+          console.error('   or use --api-key option to provide an API key')
+          console.error('')
+          console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+          process.exit(1)
+        }
+
+        const codeguide = new CodeGuide({
+          baseUrl: options.apiUrl || savedConfig.apiUrl,
+          databaseApiKey: authApiKey,
+        })
+
+        // For interactive mode, we already have project info, for non-interactive we need to get it
+        if (!options.directory) {
+          // Interactive mode - get project info again with the main codeguide instance
+          try {
+            project = await withLoadingAnimation(
+              async () => {
+                const response = await codeguide.projects.getProjectById(projectId)
+                return response
+              },
+              'Fetching project information...',
+              'Project information retrieved',
+              'Failed to fetch project information'
+            )
+          } catch (error) {
+            console.error('❌ Failed to fetch project information')
+            console.error('💡 Please verify the project ID is correct')
+            throw error
+          }
+        }
+
+        // Create documentation directory in target directory
+        const docsDir = path.join(targetDir, 'documentation')
+        if (!fs.existsSync(docsDir)) {
+          fs.mkdirSync(docsDir, { recursive: true })
+          console.log(`📁 Created documentation directory: ${docsDir}`)
+        } else {
+          console.log(`📁 Using existing documentation directory: ${docsDir}`)
+        }
+
+        // Fetch project documents
+        console.log('📥 Fetching project documents...')
+        let documents
+        try {
+          documents = await withLoadingAnimation(
+            async () => {
+              const response = await codeguide.projects.getProjectDocuments(projectId, {
+                current_version_only: true,
+              })
+              return response
+            },
+            'Fetching documents...',
+            'Documents fetched successfully',
+            'Failed to fetch documents'
+          )
+        } catch (error) {
+          console.error('❌ Failed to fetch project documents')
+          throw error
+        }
+
+        // Save documents to the documentation directory
+        console.log('💾 Saving documents...')
+        if (documents.data && Array.isArray(documents.data) && documents.data.length > 0) {
+          documents.data.forEach((doc: any) => {
+            // Skip implementation_plan.md files
+            if (doc.custom_document_type === 'implementation_plan') {
+              return
+            }
+            const safeDocName =
+              doc.custom_document_type ||
+              doc.title
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+            const documentContent = `# ${doc.title}
+
+${doc.content}
+
+---
+**Document Details**
+- **Project ID**: ${projectId}
+- **Document ID**: ${doc.id}
+- **Type**: ${doc.document_type}
+- **Custom Type**: ${doc.custom_document_type}
+- **Status**: ${doc.status}
+- **Generated On**: ${new Date(doc.created_at).toISOString()}
+- **Last Updated**: ${doc.updated_at ? new Date(doc.updated_at).toISOString() : 'N/A'}
+`
+            saveDocument(docsDir, safeDocName, documentContent)
+          })
+
+          console.log(`✅ Saved ${documents.data.length} documents to ${docsDir}`)
+        } else {
+          console.log(`ℹ️  No documents found for this project`)
+        }
+
+        // Create codeguide.json configuration file in target directory
+        console.log('⚙️  Creating project configuration...')
+        createCodeguideConfig(targetDir, projectId, project?.title || 'Project')
+
+        // Generate and save AGENTS.md
+        console.log('📋 Creating CLI documentation files...')
+        const agentMdContent = generateAgentMdContent(project?.title || 'Project', project?.description || 'A project managed by CodeGuide CLI')
+        const agentMdPath = path.join(targetDir, 'AGENTS.md')
+        fs.writeFileSync(agentMdPath, agentMdContent, 'utf8')
+        console.log('📄 Created: AGENTS.md')
+
+        console.log('')
+        console.log('🎉 Documentation setup complete!')
+        console.log(`📁 Target Directory: ${targetDir}`)
+        console.log(`📄 Documentation Folder: ${docsDir}`)
+        console.log(`⚙️  Project Configuration: codeguide.json`)
+        console.log(`📄 Agent Guidelines: AGENTS.md`)
+        console.log(`🆔 Project ID: ${projectId}`)
+        console.log('💡 All documents have been saved to the documentation folder.')
+        console.log('🔗 View and manage tasks in the CodeGuide dashboard')
+        console.log('')
+        console.log('🚀 Next steps:')
+        console.log('   • Read the documentation files to understand the project')
+        console.log('   • Run "codeguide task list" to see project tasks')
+        console.log('   • Use "codeguide task start <task_id>" to start working on tasks')
+
+      } catch (error) {
+        console.error('❌ Failed to set up documentation')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {

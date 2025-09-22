@@ -1204,11 +1204,16 @@ Format the documentation in Markdown with proper headers, code examples, and str
   // Authentication commands
   program
     .command('login')
-    .description('Save API key for future use')
+    .description('Save API key for future use (supports --api-key flag for non-interactive login)')
     .option(
       '--api-url <url>',
       'API URL',
       process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
+    )
+    .option(
+      '--api-key <key>',
+      'API key',
+      process.env.CODEGUIDE_API_KEY
     )
     .action(async options => {
       try {
@@ -1216,7 +1221,10 @@ Format the documentation in Markdown with proper headers, code examples, and str
         console.log('==================')
 
         let apiKey: string
-        if (process.env.CODEGUIDE_API_KEY && process.env.CODEGUIDE_API_KEY.trim()) {
+        if (options.apiKey && options.apiKey.trim()) {
+          apiKey = options.apiKey
+          console.log('📋 Using API key from command line')
+        } else if (process.env.CODEGUIDE_API_KEY && process.env.CODEGUIDE_API_KEY.trim()) {
           apiKey = process.env.CODEGUIDE_API_KEY
           console.log('📋 Using API key from environment variable')
         } else {

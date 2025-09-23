@@ -7,6 +7,20 @@ export interface TaskGroup {
   created_at: string
   updated_at: string
   project_tasks: ProjectTask[]
+  prd_content?: string
+  raw_tasks?: {
+    tasks: RawTask[]
+    expanded_tasks: RawTask[]
+  }
+  codespace_task_id?: string
+}
+
+export interface RawTask {
+  id: number
+  title: string
+  description?: string
+  priority?: string
+  status?: string
 }
 
 export interface ProjectTask {
@@ -14,6 +28,7 @@ export interface ProjectTask {
   title: string
   description?: string
   status: string
+  priority?: string
   user_id: string
   task_group_id: string
   parent_task_id?: string
@@ -27,12 +42,18 @@ export interface CreateTaskGroupRequest {
   name: string
   description?: string
   project_id: string
+  include_codespace_task?: boolean
+  project_description?: string
 }
 
 export interface UpdateTaskGroupRequest {
-  name?: string
-  description?: string
   project_id?: string
+  prd_content?: string
+  raw_tasks?: {
+    tasks: RawTask[]
+    expanded_tasks: RawTask[]
+  }
+  codespace_task_id?: string
 }
 
 export interface CreateProjectTaskRequest {
@@ -136,20 +157,8 @@ export interface GetTasksByProjectResponse {
   }
 }
 
-export interface StartTaskRequest {
-  task_id: string
-}
-
-export interface StartTaskResponse {
-  status: string
-  message: string
-  data: {
-    task: ProjectTask
-  }
-}
 
 export interface UpdateTaskRequest {
-  task_id: string
   status?: string
   ai_result?: string
   title?: string

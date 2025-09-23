@@ -15,6 +15,7 @@ import {
   ApiKeyEnhancedService,
   SubscriptionService,
   CancellationFunnelService,
+  CodespaceService,
 } from './services'
 import { APIServiceConfig, CodeGuideOptions } from './types'
 
@@ -27,6 +28,7 @@ export class CodeGuide {
   public apiKeyEnhanced: ApiKeyEnhancedService
   public subscription: SubscriptionService
   public cancellationFunnel: CancellationFunnelService
+  public codespace: CodespaceService
   private options: CodeGuideOptions
 
   constructor(config: APIServiceConfig, options: CodeGuideOptions = {}) {
@@ -41,6 +43,7 @@ export class CodeGuide {
     this.apiKeyEnhanced = new ApiKeyEnhancedService(config)
     this.subscription = new SubscriptionService(config)
     this.cancellationFunnel = new CancellationFunnelService(config)
+    this.codespace = new CodespaceService(config)
   }
 
   // Convenience method for backward compatibility
@@ -71,6 +74,17 @@ export class CodeGuide {
 
   async isHealthy(): Promise<boolean> {
     return this.usage.healthCheck()
+  }
+
+  // Helper method to create task group with codespace task integration
+  async createTaskGroupWithCodespace(request: {
+    name: string
+    description?: string
+    project_id: string
+    include_codespace_task?: boolean
+    project_description?: string
+  }): Promise<any> {
+    return this.tasks.createTaskGroupWithCodespace(request, this.codespace)
   }
 
   setOptions(options: Partial<CodeGuideOptions>): void {

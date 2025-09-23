@@ -85,7 +85,7 @@ function createProjectDirectories(projectTitle: string): {
 function saveDocument(docsDir: string, filename: string, content: string): void {
   const filePath = path.join(docsDir, filename.endsWith('.md') ? filename : `${filename}.md`)
   fs.writeFileSync(filePath, content, 'utf8')
-  console.log(`📄 Saved: ${filePath}`)
+  console.log(` Saved: ${filePath}`)
 }
 
 /**
@@ -113,7 +113,7 @@ This will show you all the available tasks, organized by status (pending, in_pro
 Choose a task from the list and begin working on it:
 
 \`\`\`bash
-codeguide task start <task_id>
+codeguide task update <task_id> --status in_progress
 \`\`\`
 
 Replace \`<task_id>\` with the actual ID of the task you want to work on.
@@ -142,10 +142,59 @@ codeguide task update <task_id> --status completed
 
 1. **Review Tasks**: Always start by reviewing available tasks
 2. **Plan Your Work**: Choose tasks that make sense to work on next
-3. **Start Tasks**: Use \`codeguide task start\` to begin work on a task
+3. **Start Tasks**: Use \`codeguide task update <task_id> --status in_progress\` to begin work on a task
 4. **Update Progress**: Keep your task progress updated as you work
 5. **Complete Tasks**: Mark tasks as completed when finished
 6. **Generate Documentation**: Use \`codeguide generate\` for new features
+
+## 🧹 Cleanup Instructions
+
+### When You're Done with Setup
+
+Once you've reviewed all the documentation and are ready to start development, you should clean up the project structure:
+
+#### If this project was created in a subdirectory (not current directory):
+
+1. **Move essential files to the project root:**
+   \`\`\`bash
+   # Move documentation folder to project root
+   mv documentation/ ../
+
+   # Move AGENTS.md to project root
+   mv AGENTS.md ../
+
+   # Move codeguide.json to project root
+   mv codeguide.json ../
+
+   # Navigate to the parent directory
+   cd ..
+   \`\`\`
+
+2. **Remove the now-empty subdirectory:**
+   \`\`\`bash
+   # Remove the subdirectory (replace with actual directory name)
+   rmdir <project-subdirectory-name>
+   \`\`\`
+
+3. **Delete this instructions.md file:**
+   \`\`\`bash
+   rm instructions.md
+   \`\`\`
+
+#### Your final project structure should be:
+\`\`\`
+project-root/
+├── documentation/          # Project documentation
+├── AGENTS.md               # AI development guidelines
+├── codeguide.json          # CodeGuide project configuration
+└── (your source code files)
+\`\`\`
+
+### Benefits of Cleanup:
+- **Cleaner project structure** - No unnecessary nested directories
+- **Better navigation** - All files are at the project root
+- **Professional setup** - Matches standard project layouts
+- **Removes setup artifacts** - No temporary instruction files
 
 ## Getting Help
 
@@ -162,12 +211,12 @@ codeguide task update <task_id> --status completed
 /**
  * Generate AGENT.md content
  */
-function generateAgentMdContent(projectTitle: string, projectDescription: string): string {
+function generateAgentMdContent(projectTitle: string, project: string): string {
   return `# AI Development Agent Guidelines
 
 ## Project Overview
 **Project:** ${projectTitle}
-**Description:** ${projectDescription}
+**** ${project}
 
 ## CodeGuide CLI Usage Instructions
 
@@ -233,7 +282,7 @@ codeguide health
 1. **Before Starting Work:**
    - Run \`codeguide task list\` to understand current tasks
    - Identify appropriate task to work on
-   - Use \`codeguide task start <task_id>\` to begin work
+   - Use \`codeguide task update <task_id> --status in_progress\` to begin work
 
 2. **During Development:**
    - Follow the task requirements and scope
@@ -301,33 +350,54 @@ function createCodeguideConfig(projectDir: string, projectId: string, projectTit
 
   const configPath = path.join(projectDir, 'codeguide.json')
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8')
-  console.log(`⚙️  Saved: ${configPath}`)
+  console.log(`  Saved: ${configPath}`)
 }
 
 /**
- * Loading animation with spinner
+ * Simple Header
+ */
+function showHeader(): void {
+  // Get version from CLI package.json
+  const packageJson = require('../package.json')
+  const version = packageJson.version || '0.0.0'
+
+  console.log('\x1b[34m')
+  console.log(`CodeGuide CLI ${version}`)
+  console.log('\x1b[0m')
+  console.log('')
+}
+
+/**
+ * Loading animation with spinner and log clearing
  */
 class LoadingAnimation {
   private interval: NodeJS.Timeout | null = null
   private frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
   private currentFrame = 0
+  private message: string = ''
 
   start(message: string): void {
     this.currentFrame = 0
-    process.stdout.write(`\r${this.frames[this.currentFrame]} ${message}`)
+    this.message = message
+    process.stdout.write(`\r\x1b[K${this.frames[this.currentFrame]} ${message}`)
 
     this.interval = setInterval(() => {
       this.currentFrame = (this.currentFrame + 1) % this.frames.length
-      process.stdout.write(`\r${this.frames[this.currentFrame]} ${message}`)
+      process.stdout.write(`\r\x1b[K${this.frames[this.currentFrame]} ${message}`)
     }, 100)
   }
 
-  stop(finalMessage: string): void {
+  update(message: string): void {
+    this.message = message
+    process.stdout.write(`\r\x1b[K${this.frames[this.currentFrame]} ${message}`)
+  }
+
+  stop(final: string): void {
     if (this.interval) {
       clearInterval(this.interval)
       this.interval = null
     }
-    process.stdout.write(`\r✅ ${finalMessage}\n`)
+    process.stdout.write(`\r\x1b[K${final}\n`)
   }
 
   fail(message: string): void {
@@ -335,7 +405,7 @@ class LoadingAnimation {
       clearInterval(this.interval)
       this.interval = null
     }
-    process.stdout.write(`\r❌ ${message}\n`)
+    process.stdout.write(`\r\x1b[K${message}\n`)
   }
 }
 
@@ -348,15 +418,15 @@ async function withLoadingAnimation<T>(
   successMessage: string,
   errorMessage: string
 ): Promise<T> {
-  const loading = new LoadingAnimation()
+  const loadingAnimation = new LoadingAnimation()
 
   try {
-    loading.start(loadingMessage)
+    loadingAnimation.start(loadingMessage)
     const result = await operation()
-    loading.stop(successMessage)
+    loadingAnimation.stop(successMessage)
     return result
   } catch (error) {
-    loading.fail(errorMessage)
+    loadingAnimation.fail(errorMessage)
     throw error
   }
 }
@@ -382,6 +452,9 @@ export function createCommands(program: Command): void {
     )
     .action(async (prompt: string | undefined, options) => {
       try {
+        // Show ASCII art header
+        showHeader()
+
         const currentDir = getCurrentDirectory()
 
         // Validate current directory
@@ -400,12 +473,14 @@ export function createCommands(program: Command): void {
         // Check authentication first
         const authApiKey = options.apiKey || savedConfig.apiKey
         if (!authApiKey) {
-          console.error('❌ Error: No API key found')
-          console.error('💡 Please login again to save your API key:')
+          console.error('Error: No API key found')
+          console.error('Please login again to save your API key:')
           console.error('   codeguide login --api-key YOUR_API_KEY')
           console.error('   or use --api-key option to provide an API key')
           console.error('')
-          console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
           process.exit(1)
         }
 
@@ -422,16 +497,13 @@ export function createCommands(program: Command): void {
           }
         )
 
-        console.log('🔐 Checking authentication...')
         const isHealthy = await codeguide.isHealthy()
         if (!isHealthy) {
-          console.error('❌ Error: Authentication failed or API service is not available')
-          console.error('💡 Please login again with a valid API key:')
+          console.error('Error: Authentication failed or API service is not available')
+          console.error('Please login again with a valid API key:')
           console.error('   codeguide login')
           process.exit(1)
         }
-
-        console.log('✅ Authentication successful')
 
         // Declare project variables that will be used throughout the process
         let finalPrompt: string
@@ -443,14 +515,12 @@ export function createCommands(program: Command): void {
         let useCurrentCodebase: boolean
 
         if (prompt) {
-          console.log('🚀 Starting new project creation...')
-          console.log('📝 Prompt:', prompt)
           finalPrompt = prompt
           useCurrentCodebase = options.currentCodebase
         } else {
-          // Interactive mode
-          console.log('🚀 Welcome to Project Creator!')
-          console.log('📝 Let me know what you want to build...\n')
+          // Interactive mode - only show the question
+          console.log('Welcome to Project Creator!')
+          console.log('')
 
           const readline = require('readline')
           const rl = readline.createInterface({
@@ -458,93 +528,72 @@ export function createCommands(program: Command): void {
             output: process.stdout,
           })
 
+          // Show the question and subheading first
+          console.log('What do you want to build? ')
+          console.log('\x1b[90mDescribe your project in detail. The more specific you are, the better we can help you bring your vision to life.\x1b[0m')
+          console.log('')
+
+          // Then get the input
           finalPrompt = await new Promise<string>(resolve => {
-            rl.question('💭 What do you want to build? ', (answer: string) => {
+            rl.question('> ', (answer: string) => {
               rl.close()
               resolve(answer.trim())
             })
           })
-
-          if (!finalPrompt) {
-            console.error('❌ Error: Project description is required')
-            process.exit(1)
-          }
-
-          console.log('')
-          console.log('🚀 Starting new project creation...')
-          console.log('📝 Prompt:', finalPrompt)
-
-          // Ask if user wants to create new project directory if flag is not set
-          useCurrentCodebase = options.currentCodebase
-          if (!useCurrentCodebase) {
-            const readline = require('readline')
-            const rl = readline.createInterface({
-              input: process.stdin,
-              output: process.stdout,
-            })
-
-            const answer = await new Promise<string>(resolve => {
-              rl.question(
-                '📄 Do you want to create a new project directory? (y/N): ',
-                (answer: string) => {
-                  rl.close()
-                  resolve(answer.trim().toLowerCase())
-                }
-              )
-            })
-
-            useCurrentCodebase = !(answer === 'y' || answer === 'yes')
-          }
         }
 
-        // Step 1: Generate title
+        if (!finalPrompt) {
+          console.error('Error: Project description is required')
+          process.exit(1)
+        }
+
+        // Ask if user wants to create new project directory if flag is not set
+        useCurrentCodebase = options.currentCodebase
+        if (!useCurrentCodebase) {
+          const readline = require('readline')
+          const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+          })
+
+          const answer = await new Promise<string>(resolve => {
+            rl.question(
+              'Do you want to create a new project directory? (y/N): ',
+              (answer: string) => {
+                rl.close()
+                resolve(answer.trim().toLowerCase())
+              }
+            )
+          })
+
+          useCurrentCodebase = !(answer === 'y' || answer === 'yes')
+        }
+
+        // Generate title
         try {
           const titleResponse = await withLoadingAnimation(
             async () => {
-              // Show API request details in verbose mode
-              if (options.verbose) {
-                console.log('📤 API Request Details:')
-                console.log('   Endpoint: /generation/generate-title')
-                console.log('   Description:', finalPrompt)
-                console.log('   Language:', options.language || 'not specified')
-                console.log('   Context:', options.context || 'not provided')
-              }
-
-              const response = await codeguide.generation.generateTitle({
+              return await codeguide.generation.generateTitle({
                 description: finalPrompt,
                 ...(options.language && { language: options.language }),
                 ...(options.context && { context: options.context }),
               })
-
-              // Show API response details in verbose mode
-              if (options.verbose) {
-                console.log('📥 API Response Details:')
-                console.log('   Status: Success')
-                console.log('   Generated Title:', response.title || 'No title generated')
-              }
-
-              return response
             },
             'Generating project title...',
-            'Project title generated',
+            '✓ Project title generated',
             'Failed to generate project title'
           )
 
           projectTitle = titleResponse.title
-          console.log('📋 Project Title:', projectTitle)
 
-          // Step 1.5: Create directory structure (conditional based on current-codebase mode)
+          // Create directory structure (conditional based on current-codebase mode)
           if (!useCurrentCodebase) {
-            console.log('📁 Creating project directory...')
             const dirs = createProjectDirectories(projectTitle)
             projectDir = dirs.projectDir
             docsDir = dirs.docsDir
             projectName = dirs.projectName
-            console.log(`✅ Project directory created: ${projectDir}`)
-            console.log(`📁 Documentation directory: ${docsDir}`)
           } else {
             // For current-codebase mode, use current directory and create documentation folder
-            console.log('📁 Setting up current directory for documentation...')
             const docsDirName = 'documentation'
             const docsDirPath = path.join(currentDir, docsDirName)
             if (!fs.existsSync(docsDirPath)) {
@@ -553,54 +602,53 @@ export function createCommands(program: Command): void {
             projectDir = currentDir
             docsDir = docsDirPath
             projectName = path.basename(currentDir)
-            console.log(`✅ Documentation folder created: ${docsDirPath}`)
           }
         } catch (error) {
-          console.error('❌ Failed to generate project title')
+          console.error('Failed to generate project title')
 
           // Enhanced error logging
           if (error && typeof error === 'object' && 'response' in error) {
             const apiError = error as any
-            console.error('🔍 API Error Details:')
-            console.error('   Status:', apiError.response?.status || 'Unknown')
-            console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
-            console.error('   URL:', apiError.config?.url || 'Unknown')
-            console.error('   Method:', apiError.config?.method || 'Unknown')
+            console.error('API Error Details:')
+            console.error('  Status:', apiError.response?.status || 'Unknown')
+            console.error('  Status Text:', apiError.response?.statusText || 'Unknown')
+            console.error('  URL:', apiError.config?.url || 'Unknown')
+            console.error('  Method:', apiError.config?.method || 'Unknown')
 
             if (apiError.response?.data) {
-              console.error('   Response Data:', JSON.stringify(apiError.response.data, null, 2))
+              console.error('  Response Data:', JSON.stringify(apiError.response.data, null, 2))
             }
 
             if (apiError.message) {
-              console.error('   Error Message:', apiError.message)
+              console.error('  Error:', apiError.message)
             }
           } else if (error instanceof Error) {
-            console.error('🔍 Error Details:')
-            console.error('   Type:', error.constructor.name)
-            console.error('   Message:', error.message)
+            console.error('Error Details:')
+            console.error('  Type:', error.constructor.name)
+            console.error('  Message:', error.message)
             if (options.verbose && error.stack) {
-              console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
+              console.error('  Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
             }
           } else {
-            console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+            console.error('Unknown Error:', JSON.stringify(error, null, 2))
           }
 
           throw error
         }
 
-        // Step 2: Generate outline
+        // Generate outline
         try {
           const outlineResponse = await withLoadingAnimation(
             async () => {
               // Show API request details in verbose mode
               if (options.verbose) {
-                console.log('📤 API Request Details:')
-                console.log('   Endpoint: /generation/generate-outline')
+                console.log(' ')
+                console.log('    /generation/generate-outline')
                 console.log('   Project Type:', options.language || 'general')
-                console.log('   Description:', finalPrompt)
+                console.log('   ', finalPrompt)
                 console.log('   Title:', projectTitle)
                 console.log('   Selected Tools: [] (empty array)')
-                console.log('   Language:', options.language || 'not specified')
+                console.log('   ', options.language || 'not specified')
                 console.log('   Context:', options.context || 'not provided')
               }
 
@@ -615,8 +663,8 @@ export function createCommands(program: Command): void {
 
               // Show API response details in verbose mode
               if (options.verbose) {
-                console.log('📥 API Response Details:')
-                console.log('   Status: Success')
+                console.log(' ')
+                console.log('    Success')
                 console.log(
                   '   Outline Length:',
                   response.outline ? response.outline.length : 0,
@@ -635,20 +683,20 @@ export function createCommands(program: Command): void {
           )
 
           projectOutline = outlineResponse.outline
-          console.log('📊 Outline generated successfully')
+          console.log('✓ Outline generated successfully')
 
           if (options.verbose && projectOutline) {
-            console.log('📋 Generated Outline Preview:')
+            console.log('Generated Outline Preview:')
             console.log(projectOutline.substring(0, 200) + '...')
           }
         } catch (error) {
-          console.error('❌ Failed to generate project outline')
+          console.error(' Failed to generate project outline')
 
           // Enhanced error logging
           if (error && typeof error === 'object' && 'response' in error) {
             const apiError = error as any
-            console.error('🔍 API Error Details:')
-            console.error('   Status:', apiError.response?.status || 'Unknown')
+            console.error(' API Error Details:')
+            console.error('   ', apiError.response?.status || 'Unknown')
             console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
             console.error('   URL:', apiError.config?.url || 'Unknown')
             console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -658,36 +706,34 @@ export function createCommands(program: Command): void {
             }
 
             if (apiError.message) {
-              console.error('   Error Message:', JSON.stringify(apiError.message))
+              console.error('   Error ', JSON.stringify(apiError.message))
             }
           } else if (error instanceof Error) {
-            console.error('🔍 Error Details:')
+            console.error(' Error Details:')
             console.error('   Type:', error.constructor.name)
-            console.error('   Message:', error.message)
+            console.error('   ', error.message)
             if (error.stack) {
               console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
             }
           } else {
-            console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+            console.error(' Unknown Error:', JSON.stringify(error, null, 2))
           }
 
           throw error
         }
 
-        // Step 3: Create project (conditional based on current-codebase mode)
+        // Create project (conditional based on current-codebase mode)
         let project: any
         if (!useCurrentCodebase) {
-          console.log('🏗️  Creating project...')
-
           // Show API request details in verbose mode
           if (options.verbose) {
-            console.log('📤 API Request Details:')
-            console.log('   Endpoint: /projects')
-            console.log('   Title:', projectTitle)
-            console.log('   Description Length:', finalPrompt.length, 'characters')
-            console.log('   Outline Length:', projectOutline.length, 'characters')
-            console.log('   Status: in_progress')
-            console.log('   Language:', options.language || 'not specified')
+            console.log('\nAPI Request Details:')
+            console.log('  Endpoint: /projects')
+            console.log('  Title:', projectTitle)
+            console.log('  Description Length:', finalPrompt.length, 'characters')
+            console.log('  Outline Length:', projectOutline.length, 'characters')
+            console.log('  Status: in_progress')
+            console.log('  Language:', options.language || 'not specified')
           }
 
           try {
@@ -705,31 +751,37 @@ export function createCommands(program: Command): void {
 
                 // Show API response details in verbose mode
                 if (options.verbose) {
-                  console.log('📥 API Response Details:')
-                  console.log('   Status: Success')
-                  console.log('   Project ID:', response.id)
-                  console.log('   Created Project Title:', response.title || 'Unknown')
+                  console.log('\nAPI Response Details:')
+                  console.log('  Status: Success')
+                  console.log('  Project ID:', response.id)
+                  console.log('  Project Title:', response.title || 'Unknown')
                 }
 
                 return response
               },
-              'Creating project in API...',
-              'Project created successfully',
+              'Creating project...',
+              '✓ Project created successfully',
               'Failed to create project'
             )
 
-            console.log('🏗️  Project API created')
-            console.log('   Project ID:', project.id)
+            console.log('✓ Project API created')
+            console.log(`  Project ID: ${project.id}`)
 
-            // Step 3.5: Create codeguide.json configuration file
-            console.log('⚙️  Creating project configuration...')
+            // Create codeguide.json configuration file
             createCodeguideConfig(projectDir, project.id, projectTitle)
           } catch (error) {
-            console.error('❌ Failed to create project')
+            console.error('Failed to create project')
             throw error
           }
         } else {
-          console.log('📄 Current-codebase mode: Creating project in current directory...')
+          // Show API request details in verbose mode
+          if (options.verbose) {
+            console.log('\nAPI Request Details:')
+            console.log('  Mode: Current directory')
+            console.log('  Title:', projectTitle)
+            console.log('  Description Length:', finalPrompt.length, 'characters')
+            console.log('  Outline Length:', projectOutline.length, 'characters')
+          }
 
           try {
             project = await withLoadingAnimation(
@@ -746,39 +798,36 @@ export function createCommands(program: Command): void {
 
                 // Show API response details in verbose mode
                 if (options.verbose) {
-                  console.log('📥 API Response Details:')
-                  console.log('   Status: Success')
-                  console.log('   Project ID:', response.id)
-                  console.log('   Created Project Title:', response.title || 'Unknown')
+                  console.log('\nAPI Response Details:')
+                  console.log('  Status: Success')
+                  console.log('  Project ID:', response.id)
+                  console.log('  Project Title:', response.title || 'Unknown')
                 }
 
                 return response
               },
-              'Creating project in API...',
-              'Project created successfully',
+              'Creating project...',
+              '✓ Project created successfully',
               'Failed to create project'
             )
 
-            console.log('🏗️  Project API created')
-            console.log('   Project ID:', project.id)
+            console.log('✓ Project API created')
+            console.log(`  Project ID: ${project.id}`)
 
-            // Step 3.5: Create codeguide.json configuration file in current directory
-            console.log('⚙️  Creating project configuration...')
+            // Create codeguide.json configuration file in current directory
             createCodeguideConfig(projectDir, project.id, projectTitle)
           } catch (error) {
-            console.error('❌ Failed to create project')
+            console.error('Failed to create project')
             throw error
           }
         }
 
-        // Step 4: Generate missing documents
-        console.log('📄 Generating missing documentation...')
-
+        // Generate missing documents
         if (options.verbose) {
-          console.log('📤 API Request Details:')
-          console.log('   Endpoint: /generation/generate-missing-documents')
-          console.log('   Project ID:', project.id)
-          console.log('   Description: Will auto-generate missing documents based on project data')
+          console.log('\nAPI Request Details:')
+          console.log('  Endpoint: /generation/generate-missing-documents')
+          console.log('  Project ID:', project.id)
+          console.log('  Auto-generating missing documents based on project data')
         }
 
         const docResponse = await withLoadingAnimation(
@@ -791,27 +840,27 @@ export function createCommands(program: Command): void {
 
             // Show API response details in verbose mode
             if (options.verbose) {
-              console.log('📥 API Response Details:')
-              console.log('   Status:', response.success ? 'Success' : 'Failed')
-              console.log('   Success:', response.success)
+              console.log('\nAPI Response Details:')
+              console.log('  Status:', response.success ? 'Success' : 'Failed')
+              console.log('  Success:', response.success)
               if (response.message) {
-                console.log('   Message:', response.message)
+                console.log('  Message:', response.message)
               }
               if (response.error) {
-                console.log('   Error:', response.error)
+                console.log('  Error:', response.error)
               }
               if (response.generated_documents && Array.isArray(response.generated_documents)) {
-                console.log('   Generated Documents:', response.generated_documents.length)
+                console.log('  Generated Documents:', response.generated_documents.length)
                 response.generated_documents.forEach((docType: string, index: number) => {
-                  console.log(`     ${index + 1}. ${docType}`)
+                  console.log(`    ${index + 1}. ${docType}`)
                 })
               }
             }
 
             return response
           },
-          'Generating missing documents...',
-          'Documents generated successfully',
+          'Generating documents...',
+          '✓ Documents generated successfully',
           'Failed to generate documents'
         )
 
@@ -821,8 +870,13 @@ export function createCommands(program: Command): void {
           )
         }
 
-        // Step 5: Fetch and save documents
-        console.log('📥 Fetching generated documents from API...')
+        // Fetch and save documents
+        if (options.verbose) {
+          console.log('\nAPI Request Details:')
+          console.log('  Endpoint: /projects/{id}/documents')
+          console.log('  Project ID:', project.id)
+          console.log('  Current version only: true')
+        }
 
         const documentsResponse = await withLoadingAnimation(
           async () => {
@@ -832,25 +886,24 @@ export function createCommands(program: Command): void {
 
             // Show API response details in verbose mode
             if (options.verbose) {
-              console.log('📥 API Response Details:')
-              console.log('   Status:', response.status)
-              console.log('   Documents Count:', response.data?.length || 0)
+              console.log('\nAPI Response Details:')
+              console.log('  Status:', response.status)
+              console.log('  Documents Count:', response.data?.length || 0)
               if (response.data && Array.isArray(response.data)) {
                 response.data.forEach((doc: any, index: number) => {
-                  console.log(`   ${index + 1}. ${doc.title} (${doc.custom_document_type})`)
+                  console.log(`    ${index + 1}. ${doc.title} (${doc.custom_document_type})`)
                 })
               }
             }
 
             return response
           },
-          'Fetching documents from API...',
-          'Documents fetched successfully',
+          'Fetching documents...',
+          '✓ Documents fetched successfully',
           'Failed to fetch documents'
         )
 
         // Save the fetched documents to the documentation folder
-        console.log('💾 Saving generated documents...')
         if (
           documentsResponse.data &&
           Array.isArray(documentsResponse.data) &&
@@ -885,23 +938,22 @@ ${doc.content}
             saveDocument(docsDir, safeDocName, documentContent)
           })
 
-          console.log(`✅ Saved ${documentsResponse.data.length} documents to ${docsDir}`)
+          console.log(`✓ Saved ${documentsResponse.data.length} documents to ${docsDir}`)
         } else {
-          console.log(`ℹ️  No specific documents returned from API`)
+          console.log('⚠ No documents returned from API')
         }
 
-        // Step 5: Generate tasks for the project
-        console.log('📋 Generating project tasks...')
-
+        // Generate tasks for the project
+        let taskResponse: any
         try {
-          const taskResponse = await withLoadingAnimation(
-            async () => {
-              if (options.verbose) {
-                console.log('📤 Task Generation API Request Details:')
-                console.log('   Endpoint: /project-tasks/generate-tasks')
-                console.log('   Project ID:', project.id)
-              }
+          if (options.verbose) {
+            console.log('\nAPI Request Details:')
+            console.log('  Endpoint: /project-tasks/generate-tasks')
+            console.log('  Project ID:', project.id)
+          }
 
+          taskResponse = await withLoadingAnimation(
+            async () => {
               const taskRequest = {
                 project_id: project.id,
               }
@@ -909,42 +961,42 @@ ${doc.content}
               const response = await codeguide.tasks.generateTasks(taskRequest)
 
               if (options.verbose) {
-                console.log('📥 Task Generation API Response Details:')
-                console.log('   Status:', response.status)
-                console.log('   Message:', response.message)
+                console.log('\nAPI Response Details:')
+                console.log('  Status:', response.status)
+                console.log('  Message:', response.message)
                 if (response.data) {
-                  console.log('   Task Groups Created:', response.data.task_groups_created || 0)
-                  console.log('   Tasks Created:', response.data.tasks_created || 0)
+                  console.log('  Task Groups Created:', response.data.task_groups_created || 0)
+                  console.log('  Tasks Created:', response.data.tasks_created || 0)
                 }
               }
 
               return response
             },
-            'Generating project tasks...',
-            'Project tasks generated successfully',
-            'Failed to generate project tasks'
+            'Generating tasks...',
+            '✓ Tasks generated successfully',
+            'Failed to generate tasks'
           )
 
-          console.log('✅ Task generation completed!')
-          console.log('📋 Status:', taskResponse.status)
-          console.log('💬 Message:', taskResponse.message)
+          console.log('✓ Task generation completed')
+          console.log(`  Status: ${taskResponse.status}`)
+          console.log(`  Message: ${taskResponse.message}`)
 
           if (taskResponse.data) {
-            console.log('📊 Task Generation Results:')
-            console.log('   Task Groups Created:', taskResponse.data.task_groups_created || 0)
-            console.log('   Tasks Created:', taskResponse.data.tasks_created || 0)
+            console.log('  Results:')
+            console.log(`    Task Groups Created: ${taskResponse.data.task_groups_created || 0}`)
+            console.log(`    Tasks Created: ${taskResponse.data.tasks_created || 0}`)
           }
         } catch (taskError) {
-          console.warn('⚠️  Task generation failed, but project setup was successful')
-          console.warn('💡 You can generate tasks later with: codeguide task')
+          console.warn('⚠ Task generation failed, but project setup was successful')
+          console.warn('  You can generate tasks later with: codeguide task')
 
           if (options.verbose) {
-            console.warn('🔍 Task Generation Error Details:')
+            console.warn('\nTask Generation Error Details:')
             if (taskError instanceof Error) {
-              console.warn('   Type:', taskError.constructor.name)
-              console.warn('   Message:', taskError.message)
+              console.warn('  Type:', taskError.constructor.name)
+              console.warn('  Message:', taskError.message)
             } else {
-              console.warn('   Error:', JSON.stringify(taskError, null, 2))
+              console.warn('  Error:', JSON.stringify(taskError, null, 2))
             }
           }
         }
@@ -954,71 +1006,64 @@ ${doc.content}
           process.chdir(projectDir)
         }
 
-        // Final success messages
+        // Final success message with summary
+        console.log('\n' + '='.repeat(60))
+        console.log('🎉 PROJECT SETUP COMPLETE')
+        console.log('='.repeat(60))
+
         if (useCurrentCodebase) {
-          console.log('🎉 Project setup complete in current directory!')
-          console.log(`📁 Current directory: ${projectDir}`)
-          console.log(`📄 Documentation folder: ${docsDir}`)
-          console.log(`⚙️  Project configuration: codeguide.json`)
-          console.log(`🆔 Project ID: ${project.id}`)
-          console.log('📋 Project tasks generated successfully!')
-          console.log('💡 All documents have been saved to the documentation folder.')
-          console.log('🔗 View and manage tasks in the CodeGuide dashboard')
+          console.log(`📍 Location: Current directory (${currentDir})`)
         } else {
-          console.log('🎉 New project setup complete!')
-          console.log(`📁 Project directory: ${projectDir}`)
-          console.log(`📄 Documentation folder: ${docsDir}`)
-          console.log(`⚙️  Project configuration: codeguide.json`)
-          console.log(`📄 Project instructions: instructions.md`)
-          console.log(`🆔 Project ID: ${project.id}`)
-          console.log('📋 Project tasks generated successfully!')
-          console.log('💡 All documents have been saved to the documentation folder.')
-          console.log('🔗 View and manage tasks in the CodeGuide dashboard')
-          console.log(`📍 Current directory changed to: ${projectName}`)
-          console.log('')
-          console.log('🚀 Next steps:')
-          console.log('   • Read instructions.md for getting started guidance')
-          console.log('   • Run "codeguide task list" to see your tasks')
-          console.log('   • Start working on your first task!')
+          console.log(`📍 Location: ${projectDir}`)
         }
 
-        // Step 6: Initialize project with CLI documentation files
-        console.log('📋 Adding CLI documentation files...')
+        console.log(`📋 Project: ${projectTitle}`)
+        console.log(`🆔 Project ID: ${project.id}`)
+        console.log(`📁 Documentation: ${docsDir}`)
 
+        // Show summary of what was created
+        console.log('\n📊 Summary:')
+        console.log(`✅ Project created and configured`)
+        console.log(`✅ Documentation generated (${documentsResponse.data?.length || 0} documents)`)
+
+        if (taskResponse.data) {
+          console.log(`✅ Tasks generated (${taskResponse.data.task_groups_created || 0} groups, ${taskResponse.data.tasks_created || 0} tasks)`)
+        }
+
+        console.log('\n🚀 Next Steps:')
+        if (!useCurrentCodebase) {
+          console.log(`• Run "cd ${projectDir}" to navigate to your project`)
+        }
+        console.log('• Give this prompt to an AI agent: "follow the instructions in @instructions.md"')
+        console.log('• Or run "codeguide task list" to see available tasks')
+        console.log('• Run "codeguide task update <task_id> --status in_progress" to begin working on a task')
+
+        console.log('\n' + '='.repeat(60))
+
+        // Initialize project with CLI documentation files
         try {
           // Generate and save AGENTS.md
           const agentMdContent = generateAgentMdContent(projectTitle, finalPrompt)
           const agentMdPath = path.join(projectDir, 'AGENTS.md')
           fs.writeFileSync(agentMdPath, agentMdContent, 'utf8')
-          console.log('📄 Created: AGENTS.md')
 
           // For new projects (not current-codebase), create instructions.md
           if (!useCurrentCodebase) {
             const instructionsMdContent = generateInstructionsMdContent(projectTitle, project.id)
             const instructionsMdPath = path.join(projectDir, 'instructions.md')
             fs.writeFileSync(instructionsMdPath, instructionsMdContent, 'utf8')
-            console.log('📄 Created: instructions.md')
           }
-
-          console.log('✅ CLI documentation files added successfully!')
         } catch (initError) {
-          console.warn(
-            '⚠️  Failed to create CLI documentation files, but project setup was successful'
-          )
-          if (options.verbose && initError instanceof Error) {
-            console.warn('🔍 Init Error Details:')
-            console.warn('   Type:', initError.constructor.name)
-            console.warn('   Message:', initError.message)
-          }
+          console.warn('Failed to create CLI documentation files, but project setup was successful')
         }
       } catch (error) {
-        console.error('❌ Failed to create project or generate documents')
+        console.error(' Failed to create project or generate documents')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {
           const apiError = error as any
-          console.error('🔍 API Error Details:')
-          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
           console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
           console.error('   URL:', apiError.config?.url || 'Unknown')
           console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -1028,17 +1073,17 @@ ${doc.content}
           }
 
           if (apiError.message) {
-            console.error('   Error Message:', apiError.message)
+            console.error('   Error ', apiError.message)
           }
         } else if (error instanceof Error) {
-          console.error('🔍 Error Details:')
+          console.error(' Error Details:')
           console.error('   Type:', error.constructor.name)
-          console.error('   Message:', error.message)
+          console.error('   ', error.message)
           if (options.verbose && error.stack) {
             console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
           }
         } else {
-          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
         }
 
         throw error
@@ -1090,12 +1135,14 @@ ${doc.content}
         // Check authentication first
         const authApiKey = options.apiKey || savedConfig.apiKey
         if (!authApiKey) {
-          console.error('❌ Error: No API key found')
-          console.error('💡 Please login again to save your API key:')
+          console.error('Error: No API key found')
+          console.error('Please login again to save your API key:')
           console.error('   codeguide login --api-key YOUR_API_KEY')
           console.error('   or use --api-key option to provide an API key')
           console.error('')
-          console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
           process.exit(1)
         }
 
@@ -1111,21 +1158,18 @@ ${doc.content}
           }
         )
 
-        console.log('🔐 Checking authentication...')
         const isHealthy = await codeguide.isHealthy()
         if (!isHealthy) {
-          console.error('❌ Error: Authentication failed or API service is not available')
-          console.error('💡 Please login again with a valid API key:')
+          console.error('Error: Authentication failed or API service is not available')
+          console.error('Please login again with a valid API key:')
           console.error('   codeguide login')
           process.exit(1)
         }
 
-        console.log('✅ Authentication successful')
-
         if (options.prompt) {
-          console.log('📄 Generating documentation based on your custom prompt...')
+          console.log(' Generating documentation based on your custom prompt...')
         } else {
-          console.log('📄 Generating documentation for current project...')
+          console.log(' Generating documentation for current project...')
         }
 
         let finalPrompt
@@ -1158,11 +1202,11 @@ Format the documentation in Markdown with proper headers, code examples, and str
         fs.writeFileSync(outputPath, response.response)
 
         if (options.prompt) {
-          console.log(`✅ Custom documentation generated successfully!`)
+          console.log(` Custom documentation generated successfully!`)
         } else {
-          console.log(`✅ Documentation generated successfully!`)
+          console.log(` Documentation generated successfully!`)
         }
-        console.log(`📁 Output file: ${outputPath}`)
+        console.log(` Output file: ${outputPath}`)
       } catch (error) {
         handleError(error, 'Failed to generate documentation')
         process.exit(1)
@@ -1190,9 +1234,9 @@ Format the documentation in Markdown with proper headers, code examples, and str
 
         const isHealthy = await codeguide.isHealthy()
         if (isHealthy) {
-          console.log('✅ API is healthy')
+          console.log(' API is healthy')
         } else {
-          console.log('❌ API is not healthy')
+          console.log(' API is not healthy')
           process.exit(1)
         }
       } catch (error) {
@@ -1210,23 +1254,19 @@ Format the documentation in Markdown with proper headers, code examples, and str
       'API URL',
       process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
     )
-    .option(
-      '--api-key <key>',
-      'API key',
-      process.env.CODEGUIDE_API_KEY
-    )
+    .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
     .action(async options => {
       try {
-        console.log('🔐 CodeGuide Login')
+        console.log(' CodeGuide Login')
         console.log('==================')
 
         let apiKey: string
         if (options.apiKey && options.apiKey.trim()) {
           apiKey = options.apiKey
-          console.log('📋 Using API key from command line')
+          console.log(' Using API key from command line')
         } else if (process.env.CODEGUIDE_API_KEY && process.env.CODEGUIDE_API_KEY.trim()) {
           apiKey = process.env.CODEGUIDE_API_KEY
-          console.log('📋 Using API key from environment variable')
+          console.log(' Using API key from environment variable')
         } else {
           const readline = require('readline')
           const rl = readline.createInterface({
@@ -1235,7 +1275,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
           })
 
           apiKey = await new Promise<string>(resolve => {
-            rl.question('🔑 Enter your API key: ', (answer: string) => {
+            rl.question(' Enter your API key: ', (answer: string) => {
               rl.close()
               resolve(answer.trim())
             })
@@ -1243,13 +1283,15 @@ Format the documentation in Markdown with proper headers, code examples, and str
         }
 
         if (!apiKey) {
-          console.error('❌ Error: API key is required')
-          console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+          console.error(' Error: API key is required')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
           process.exit(1)
         }
 
         if (!apiKey.startsWith('sk_')) {
-          console.warn('⚠️  Warning: API keys should start with "sk_"')
+          console.warn('  Warning: API keys should start with "sk_"')
         }
 
         const authConfig = {
@@ -1259,11 +1301,11 @@ Format the documentation in Markdown with proper headers, code examples, and str
 
         authStorage.saveAuthConfig(authConfig)
 
-        console.log('✅ API key saved successfully!')
+        console.log(' API key saved successfully!')
         console.log('')
         console.log(authStorage.getAuthInfo())
         console.log('')
-        console.log('💡 Next steps:')
+        console.log(' Next steps:')
         console.log('   • Run "codeguide start" to create a new project')
         console.log('   • Run "codeguide generate" to generate documentation')
         console.log('   • Use "codeguide logout" to remove credentials')
@@ -1284,7 +1326,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
         }
 
         authStorage.clearAuthConfig()
-        console.log('✅ API key removed successfully')
+        console.log(' API key removed successfully')
       } catch (error) {
         handleError(error, 'Failed to logout')
         process.exit(1)
@@ -1300,12 +1342,14 @@ Format the documentation in Markdown with proper headers, code examples, and str
         if (action === 'status' || action === 'show') {
           if (!authStorage.hasAuthConfig()) {
             console.log('🔓 No API key configured')
-            console.log('💡 Use "codeguide login" to save your API key')
-            console.log('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+            console.log(' Use "codeguide login" to save your API key')
+            console.log(
+              ' Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+            )
           } else {
-            console.log('🔒 API Key Status:')
+            console.log('🔒 API Key ')
             console.log(authStorage.getAuthInfo())
-            console.log('💡 Use "codeguide logout" to remove API key')
+            console.log(' Use "codeguide logout" to remove API key')
           }
         } else {
           console.error('Error: Invalid action. Use "status" or "show"')
@@ -1342,48 +1386,65 @@ Format the documentation in Markdown with proper headers, code examples, and str
         if (!projectId) {
           projectId = getProjectIdFromConfig(currentDir)
           if (!projectId) {
-            console.error('❌ No project ID found')
+            console.error(' No project ID found')
             console.error(
-              '💡 Either specify --project-id or run this command in a directory with codeguide.json'
+              ' Either specify --project-id or run this command in a directory with codeguide.json'
             )
             process.exit(1)
           }
         }
 
         if (options.verbose) {
-          console.log('🔍 Task Generation Details:')
+          console.log(' Task Generation Details:')
           console.log('   Project ID:', projectId)
           console.log('   Current Directory:', currentDir)
         }
 
+        // Get saved credentials as highest priority
+        const savedConfig = authStorage.getAuthConfig()
+
+        // Check authentication first
+        const authApiKey = options.apiKey || savedConfig.apiKey
+        if (!authApiKey) {
+          console.error('Error: No API key found')
+          console.error('Please login again to save your API key:')
+          console.error('   codeguide login --api-key YOUR_API_KEY')
+          console.error('   or use --api-key option to provide an API key')
+          console.error('')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
+          process.exit(1)
+        }
+
         // Initialize API service
         const codeguide = new CodeGuide({
-          baseUrl: options.apiUrl,
-          apiKey: options.apiKey,
+          baseUrl: options.apiUrl || savedConfig.apiUrl || process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev',
+          databaseApiKey: authApiKey,
         })
 
         // Check authentication
         try {
           await codeguide.usage.healthCheck()
           if (options.verbose) {
-            console.log('✅ Authentication successful')
+            console.log(' Authentication successful')
           }
         } catch (error) {
-          console.error('❌ Authentication failed or API service is not available')
-          console.error('💡 Please login again with a valid API key:')
+          console.error(' Authentication failed or API service is not available')
+          console.error(' Please login again with a valid API key:')
           console.error('   codeguide login')
           process.exit(1)
         }
 
-        console.log('🚀 Generating tasks for project...')
-        console.log('📝 Project ID:', projectId)
+        console.log(' Generating tasks for project...')
+        console.log(' Project ID:', projectId)
 
         // Generate tasks
         const response = await withLoadingAnimation(
           async () => {
             if (options.verbose) {
-              console.log('📤 API Request Details:')
-              console.log('   Endpoint: /project-tasks/generate-tasks')
+              console.log(' ')
+              console.log('    /project-tasks/generate-tasks')
               console.log('   Project ID:', projectId)
             }
 
@@ -1394,9 +1455,9 @@ Format the documentation in Markdown with proper headers, code examples, and str
             const response = await codeguide.tasks.generateTasks(request)
 
             if (options.verbose) {
-              console.log('📥 API Response Details:')
-              console.log('   Status:', response.status)
-              console.log('   Message:', response.message)
+              console.log(' ')
+              console.log('   ', response.status)
+              console.log('   ', response.message)
               if (response.data) {
                 console.log('   Task Groups Created:', response.data.task_groups_created || 0)
                 console.log('   Tasks Created:', response.data.tasks_created || 0)
@@ -1410,25 +1471,25 @@ Format the documentation in Markdown with proper headers, code examples, and str
           'Failed to generate tasks'
         )
 
-        console.log('✅ Task generation completed!')
-        console.log('📋 Status:', response.status)
-        console.log('💬 Message:', response.message)
+        console.log(' Task generation completed!')
+        console.log(' ', response.status)
+        console.log(' ', response.message)
 
         if (response.data) {
-          console.log('📊 Results:')
+          console.log(' Results:')
           console.log('   Task Groups Created:', response.data.task_groups_created || 0)
           console.log('   Tasks Created:', response.data.tasks_created || 0)
         }
 
-        console.log('💡 You can now view and manage your tasks with: codeguide task list')
+        console.log(' You can now view and manage your tasks with: codeguide task list')
       } catch (error) {
-        console.error('❌ Failed to generate tasks')
+        console.error(' Failed to generate tasks')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {
           const apiError = error as any
-          console.error('🔍 API Error Details:')
-          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
           console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
           console.error('   URL:', apiError.config?.url || 'Unknown')
           console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -1438,17 +1499,17 @@ Format the documentation in Markdown with proper headers, code examples, and str
           }
 
           if (apiError.message) {
-            console.error('   Error Message:', apiError.message)
+            console.error('   Error ', apiError.message)
           }
         } else if (error instanceof Error) {
-          console.error('🔍 Error Details:')
+          console.error(' Error Details:')
           console.error('   Type:', error.constructor.name)
-          console.error('   Message:', error.message)
+          console.error('   ', error.message)
           if (options.verbose && error.stack) {
             console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
           }
         } else {
-          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
         }
 
         process.exit(1)
@@ -1472,53 +1533,67 @@ Format the documentation in Markdown with proper headers, code examples, and str
         if (!projectId) {
           projectId = getProjectIdFromConfig(currentDir)
           if (!projectId) {
-            console.error('❌ No project ID found')
+            console.error(' No project ID found')
             console.error(
-              '💡 Either specify --project-id or run this command in a directory with codeguide.json'
+              ' Either specify --project-id or run this command in a directory with codeguide.json'
             )
             process.exit(1)
           }
         }
 
         if (options.verbose) {
-          console.log('🔍 Tasks List Details:')
-          console.log('   Project ID:', projectId)
-          console.log('   Current Directory:', currentDir)
-          console.log('   Status Filter:', options.status || 'All')
-          console.log('   Task Group Filter:', options.taskGroupId || 'All')
+          console.log('📋 Task List Details:')
+          console.log('  • Project ID:', projectId)
+          console.log('  • Current Directory:', currentDir)
+          console.log('  • Status Filter:', options.status || 'All')
+          console.log('  • Task Group Filter:', options.taskGroupId || 'All')
+        }
+
+        // Get saved credentials as highest priority
+        const savedConfig = authStorage.getAuthConfig()
+
+        // Check authentication first
+        const authApiKey = options.apiKey || savedConfig.apiKey
+        if (!authApiKey) {
+          console.error('Error: No API key found')
+          console.error('Please login again to save your API key:')
+          console.error('   codeguide login --api-key YOUR_API_KEY')
+          console.error('   or use --api-key option to provide an API key')
+          console.error('')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
+          process.exit(1)
         }
 
         // Initialize API service
         const codeguide = new CodeGuide({
-          baseUrl: options.apiUrl,
-          apiKey: options.apiKey,
+          baseUrl: options.apiUrl || savedConfig.apiUrl || process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev',
+          databaseApiKey: authApiKey,
         })
 
         // Check authentication
         try {
           await codeguide.usage.healthCheck()
           if (options.verbose) {
-            console.log('✅ Authentication successful')
+            console.log(' Authentication successful')
           }
         } catch (error) {
-          console.error('❌ Authentication failed or API service is not available')
-          console.error('💡 Please login again with a valid API key:')
+          console.error(' Authentication failed or API service is not available')
+          console.error(' Please login again with a valid API key:')
           console.error('   codeguide login')
           process.exit(1)
         }
-
-        console.log('📋 Fetching tasks for project...')
-        console.log('📝 Project ID:', projectId)
 
         // Get tasks by project
         const response = await withLoadingAnimation(
           async () => {
             if (options.verbose) {
-              console.log('📤 API Request Details:')
-              console.log('   Endpoint: /project-tasks/by-project/{project_id}')
-              console.log('   Project ID:', projectId)
-              console.log('   Status Filter:', options.status || 'Not specified')
-              console.log('   Task Group Filter:', options.taskGroupId || 'Not specified')
+              console.log('\nAPI Request Details:')
+              console.log('  Endpoint: /project-tasks/by-project/{project_id}')
+              console.log('  Project ID:', projectId)
+              console.log('  Status Filter:', options.status || 'Not specified')
+              console.log('  Task Group Filter:', options.taskGroupId || 'Not specified')
             }
 
             const request = {
@@ -1530,10 +1605,13 @@ Format the documentation in Markdown with proper headers, code examples, and str
             const response = await codeguide.tasks.getTasksByProject(request)
 
             if (options.verbose) {
-              console.log('📥 API Response Details:')
-              console.log('   Status:', response.status)
-              console.log('   Task Groups:', response.data.task_groups?.length || 0)
-              console.log('   Tasks:', response.data.tasks?.length || 0)
+              const verboseTasks = Array.isArray(response.data) ? response.data : response.data?.tasks || []
+              const verboseTaskGroups = response.data?.task_groups || []
+              console.log('\nAPI Response Details:')
+              console.log('  Status:', response.status)
+              console.log('  Response Type:', Array.isArray(response.data) ? 'Direct Tasks Array' : 'Nested Structure')
+              console.log('  Task Groups:', verboseTaskGroups.length)
+              console.log('  Tasks:', verboseTasks.length)
             }
 
             return response
@@ -1543,91 +1621,99 @@ Format the documentation in Markdown with proper headers, code examples, and str
           'Failed to fetch tasks'
         )
 
-        console.log('✅ Tasks retrieved successfully!')
-        console.log('📋 Status:', response.status)
+        // Handle different response structures
+        const tasks = Array.isArray(response.data) ? response.data : response.data?.tasks || []
+        const taskGroups = response.data?.task_groups || []
 
-        // Display task groups
-        if (response.data.task_groups && response.data.task_groups.length > 0) {
-          console.log('\n📁 Task Groups:')
-          response.data.task_groups.forEach((group, index) => {
-            console.log(
-              `   ${index + 1}. ${group.name} (${group.project_tasks?.length || 0} tasks)`
-            )
-            if (options.verbose && group.description) {
-              console.log(`      Description: ${group.description}`)
+        // Group tasks by status for better organization
+        const tasksByStatus = tasks.reduce(
+          (acc: Record<string, any[]>, task: any) => {
+            if (!acc[task.status]) {
+              acc[task.status] = []
             }
-          })
-        } else {
-          console.log('\n📁 No task groups found')
-        }
+            acc[task.status].push(task)
+            return acc
+          },
+          {} as Record<string, any[]>
+        )
 
         // Display tasks
-        if (response.data.tasks && response.data.tasks.length > 0) {
+        if (tasks.length > 0) {
           console.log('\n📋 Tasks:')
 
-          // Group tasks by status for better organization
-          const tasksByStatus = response.data.tasks.reduce(
-            (acc, task) => {
-              if (!acc[task.status]) {
-                acc[task.status] = []
-              }
-              acc[task.status].push(task)
-              return acc
-            },
-            {} as Record<string, typeof response.data.tasks>
-          )
-
           // Display tasks by status
-          Object.entries(tasksByStatus).forEach(([status, tasks]) => {
+          Object.entries(tasksByStatus).forEach(([status, statusTasks]) => {
             const statusIcon = getStatusIcon(status)
-            console.log(`\n${statusIcon} ${status.toUpperCase()} (${tasks.length}):`)
-            tasks.forEach((task, index) => {
-              const groupName =
-                response.data.task_groups?.find(g => g.id === task.task_group_id)?.name || 'Unknown'
+            const tasksArray = statusTasks as any[]
+            console.log(`\n${statusIcon} ${status.toUpperCase()} (${tasksArray.length}):`)
+            tasksArray.forEach((task: any, index: number) => {
               console.log(`   ${index + 1}. ${task.title}`)
-              console.log(`      Group: ${groupName}`)
+              if (task.priority) {
+                console.log(`      Priority: ${task.priority.toUpperCase()}`)
+              }
               console.log(`      ID: ${task.id}`)
               if (task.description) {
-                console.log(
-                  `      Description: ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}`
-                )
+                console.log(`      Description: ${task.description}`)
+              }
+              if (task.created_at) {
+                const createdDate = new Date(task.created_at)
+                console.log(`      Created: ${isNaN(createdDate.getTime()) ? task.created_at : createdDate.toLocaleDateString()}`)
+              }
+              if (task.updated_at) {
+                const updatedDate = new Date(task.updated_at)
+                console.log(`      Updated: ${isNaN(updatedDate.getTime()) ? task.updated_at : updatedDate.toLocaleDateString()}`)
+              }
+              if (task.details) {
+                console.log(`      Details: ${task.details}`)
+              }
+              if (task.parent_task_id) {
+                console.log(`      Parent Task: ${task.parent_task_id}`)
+              }
+              if (task.ordinal !== undefined) {
+                console.log(`      Order: ${task.ordinal}`)
               }
               if (options.verbose) {
-                console.log(`      Created: ${new Date(task.created_at).toLocaleDateString()}`)
-                console.log(`      Updated: ${new Date(task.updated_at).toLocaleDateString()}`)
-                if (task.parent_task_id) {
-                  console.log(`      Parent Task: ${task.parent_task_id}`)
-                }
+                console.log(`      User ID: ${task.user_id}`)
+                console.log(`      Task Group ID: ${task.task_group_id}`)
               }
             })
           })
         } else {
-          console.log('\n📋 No tasks found')
+          console.log('\n📝 No tasks found')
+          console.log('   Run "codeguide task generate" to create tasks for your project')
         }
 
         // Summary
-        const totalTaskGroups = response.data.task_groups?.length || 0
-        const totalTasks = response.data.tasks?.length || 0
+        const totalTasks = tasks.length
         console.log('\n📊 Summary:')
-        console.log(`   Total Task Groups: ${totalTaskGroups}`)
-        console.log(`   Total Tasks: ${totalTasks}`)
+        console.log(`  • Total Tasks: ${totalTasks}`)
 
-        if (options.status) {
-          const filteredTasks =
-            response.data.tasks?.filter(task => task.status === options.status) || []
-          console.log(`   Tasks with status '${options.status}': ${filteredTasks.length}`)
+        if (Object.keys(tasksByStatus).length > 1) {
+          console.log('\n  Tasks by Status:')
+          Object.entries(tasksByStatus).forEach(([status, statusTasks]) => {
+            const tasksArray = statusTasks as any[]
+            console.log(`  • ${status.toUpperCase()}: ${tasksArray.length}`)
+          })
         }
 
-        console.log('💡 Use "codeguide task start <task_id>" to start a task')
-        console.log('💡 Use "codeguide task update <task_id> <ai_result>" to update a task')
+        if (options.status) {
+          const filteredTasks = tasks.filter((task: any) => task.status === options.status)
+          console.log(`  • Tasks with status '${options.status}': ${filteredTasks.length}`)
+        }
+
+        if (totalTasks > 0) {
+          console.log('\n🚀 Next Steps:')
+          console.log('  • Use "codeguide task update <task_id> --status in_progress" to start a task')
+          console.log('  • Use "codeguide task update <task_id> <ai_result>" to update a task')
+        }
       } catch (error) {
-        console.error('❌ Failed to fetch tasks')
+        console.error(' Failed to fetch tasks')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {
           const apiError = error as any
-          console.error('🔍 API Error Details:')
-          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
           console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
           console.error('   URL:', apiError.config?.url || 'Unknown')
           console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -1637,17 +1723,17 @@ Format the documentation in Markdown with proper headers, code examples, and str
           }
 
           if (apiError.message) {
-            console.error('   Error Message:', apiError.message)
+            console.error('   Error ', apiError.message)
           }
         } else if (error instanceof Error) {
-          console.error('🔍 Error Details:')
+          console.error(' Error Details:')
           console.error('   Type:', error.constructor.name)
-          console.error('   Message:', error.message)
+          console.error('   ', error.message)
           if (options.verbose && error.stack) {
             console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
           }
         } else {
-          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
         }
 
         process.exit(1)
@@ -1663,52 +1749,74 @@ Format the documentation in Markdown with proper headers, code examples, and str
     .action(async (taskId, options) => {
       try {
         if (options.verbose) {
-          console.log('🔍 Task Start Details:')
+          console.log(' Task Start Details:')
           console.log('   Task ID:', taskId)
+        }
+
+        // Get saved credentials as highest priority
+        const savedConfig = authStorage.getAuthConfig()
+
+        // Check authentication first
+        const authApiKey = options.apiKey || savedConfig.apiKey
+        if (!authApiKey) {
+          console.error('Error: No API key found')
+          console.error('Please login again to save your API key:')
+          console.error('   codeguide login --api-key YOUR_API_KEY')
+          console.error('   or use --api-key option to provide an API key')
+          console.error('')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
+          process.exit(1)
         }
 
         // Initialize API service
         const codeguide = new CodeGuide({
-          baseUrl: options.apiUrl,
-          apiKey: options.apiKey,
+          baseUrl: options.apiUrl || savedConfig.apiUrl || process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev',
+          databaseApiKey: authApiKey,
         })
 
         // Check authentication
         try {
           await codeguide.usage.healthCheck()
           if (options.verbose) {
-            console.log('✅ Authentication successful')
+            console.log(' Authentication successful')
           }
         } catch (error) {
-          console.error('❌ Authentication failed or API service is not available')
-          console.error('💡 Please login again with a valid API key:')
+          console.error(' Authentication failed or API service is not available')
+          console.error(' Please login again with a valid API key:')
           console.error('   codeguide login')
           process.exit(1)
         }
 
-        console.log('🚀 Starting task...')
-        console.log('📝 Task ID:', taskId)
+        console.log(' Starting task...')
+        console.log(' Task ID:', taskId)
 
-        // Start task
+        // Update task to set status to in_progress (replacing start functionality)
         const response = await withLoadingAnimation(
           async () => {
             if (options.verbose) {
-              console.log('📤 API Request Details:')
-              console.log('   Endpoint: /project-tasks/{task_id}/start')
+              console.log(' ')
+              console.log('    /project-tasks/{task_id}')
               console.log('   Task ID:', taskId)
+              console.log('   Setting status to: in_progress')
             }
 
             const request = {
-              task_id: taskId,
+              status: 'in_progress',
             }
 
-            const response = await codeguide.tasks.startTask(request)
+            const response = await codeguide.tasks.updateTask(taskId, request)
 
             if (options.verbose) {
-              console.log('📥 API Response Details:')
-              console.log('   Status:', response.status)
-              console.log('   Message:', response.message)
-              console.log('   Task Status:', response.data.task.status)
+              console.log(' ')
+              console.log('   ', response.status)
+              console.log('   ', response.message)
+              if (response.data && response.data.task) {
+                console.log('   Task ', response.data.task.status)
+              } else {
+                console.log('   Response data:', JSON.stringify(response.data, null, 2))
+              }
             }
 
             return response
@@ -1718,30 +1826,40 @@ Format the documentation in Markdown with proper headers, code examples, and str
           'Failed to start task'
         )
 
-        console.log('✅ Task started successfully!')
-        console.log('📋 Status:', response.status)
-        console.log('💬 Message:', response.message)
+        console.log(' Task started successfully!')
+        console.log(' ', response.status)
+        console.log(' ', response.message)
 
-        const task = response.data.task
-        console.log('\n📋 Task Details:')
-        console.log(`   Title: ${task.title}`)
-        console.log(`   Status: ${getStatusIcon(task.status)} ${task.status}`)
-        console.log(`   ID: ${task.id}`)
-        if (task.description) {
-          console.log(`   Description: ${task.description}`)
+        // Check if response has the expected structure
+        if (response.data && response.data.task) {
+          const task = response.data.task
+          console.log('\n Task Details:')
+          console.log(`   Title: ${task.title}`)
+          console.log(`    ${getStatusIcon(task.status)} ${task.status}`)
+          console.log(`   ID: ${task.id}`)
+          if (task.description) {
+            console.log(`    ${task.description}`)
+          }
+        } else {
+          console.log('\n Task Details:')
+          console.log('   ID: ', taskId)
+          console.log('   Status: in_progress')
+          if (options.verbose) {
+            console.log('   Note: Full task details not available in response')
+          }
         }
 
         console.log(
-          '💡 Use "codeguide task update <task_id> <ai_result>" to update the task with AI results'
+          ' Use "codeguide task update <task_id> <ai_result>" to update the task with AI results'
         )
       } catch (error) {
-        console.error('❌ Failed to start task')
+        console.error(' Failed to start task')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {
           const apiError = error as any
-          console.error('🔍 API Error Details:')
-          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
           console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
           console.error('   URL:', apiError.config?.url || 'Unknown')
           console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -1751,17 +1869,17 @@ Format the documentation in Markdown with proper headers, code examples, and str
           }
 
           if (apiError.message) {
-            console.error('   Error Message:', apiError.message)
+            console.error('   Error ', apiError.message)
           }
         } else if (error instanceof Error) {
-          console.error('🔍 Error Details:')
+          console.error(' Error Details:')
           console.error('   Type:', error.constructor.name)
-          console.error('   Message:', error.message)
+          console.error('   ', error.message)
           if (options.verbose && error.stack) {
             console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
           }
         } else {
-          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
         }
 
         process.exit(1)
@@ -1781,43 +1899,60 @@ Format the documentation in Markdown with proper headers, code examples, and str
     .action(async (taskId, aiResult, options) => {
       try {
         if (options.verbose) {
-          console.log('🔍 Task Update Details:')
+          console.log(' Task Update Details:')
           console.log('   Task ID:', taskId)
           console.log('   AI Result:', aiResult || 'Not provided')
-          console.log('   Status:', options.status || 'Not changing')
+          console.log('   ', options.status || 'Not changing')
+        }
+
+        // Get saved credentials as highest priority
+        const savedConfig = authStorage.getAuthConfig()
+
+        // Check authentication first
+        const authApiKey = options.apiKey || savedConfig.apiKey
+        if (!authApiKey) {
+          console.error('Error: No API key found')
+          console.error('Please login again to save your API key:')
+          console.error('   codeguide login --api-key YOUR_API_KEY')
+          console.error('   or use --api-key option to provide an API key')
+          console.error('')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
+          process.exit(1)
         }
 
         // Initialize API service
         const codeguide = new CodeGuide({
-          baseUrl: options.apiUrl,
-          apiKey: options.apiKey,
+          baseUrl: options.apiUrl || savedConfig.apiUrl || process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev',
+          databaseApiKey: authApiKey,
         })
 
         // Check authentication
         try {
           await codeguide.usage.healthCheck()
           if (options.verbose) {
-            console.log('✅ Authentication successful')
+            console.log(' Authentication successful')
           }
         } catch (error) {
-          console.error('❌ Authentication failed or API service is not available')
-          console.error('💡 Please login again with a valid API key:')
+          console.error(' Authentication failed or API service is not available')
+          console.error(' Please login again with a valid API key:')
           console.error('   codeguide login')
           process.exit(1)
         }
 
         console.log('🔄 Updating task...')
-        console.log('📝 Task ID:', taskId)
+        console.log(' Task ID:', taskId)
 
         // Update task
         const response = await withLoadingAnimation(
           async () => {
             if (options.verbose) {
-              console.log('📤 API Request Details:')
-              console.log('   Endpoint: /project-tasks/{task_id}')
+              console.log(' ')
+              console.log('    /project-tasks/{task_id}')
               console.log('   Task ID:', taskId)
               console.log('   AI Result:', aiResult || 'Not provided')
-              console.log('   Status:', options.status || 'Not changing')
+              console.log('   ', options.status || 'Not changing')
             }
 
             const request: any = {}
@@ -1829,10 +1964,14 @@ Format the documentation in Markdown with proper headers, code examples, and str
             const response = await codeguide.tasks.updateTask(taskId, request)
 
             if (options.verbose) {
-              console.log('📥 API Response Details:')
-              console.log('   Status:', response.status)
-              console.log('   Message:', response.message)
-              console.log('   Task Status:', response.data.task.status)
+              console.log(' ')
+              console.log('   ', response.status)
+              console.log('   ', response.message)
+              if (response.data && response.data.task) {
+                console.log('   Task ', response.data.task.status)
+              } else {
+                console.log('   Response data:', JSON.stringify(response.data, null, 2))
+              }
             }
 
             return response
@@ -1842,28 +1981,38 @@ Format the documentation in Markdown with proper headers, code examples, and str
           'Failed to update task'
         )
 
-        console.log('✅ Task updated successfully!')
-        console.log('📋 Status:', response.status)
-        console.log('💬 Message:', response.message)
+        console.log(' Task updated successfully!')
+        console.log(' ', response.status)
+        console.log(' ', response.message)
 
-        const task = response.data.task
-        console.log('\n📋 Updated Task Details:')
-        console.log(`   Title: ${task.title}`)
-        console.log(`   Status: ${getStatusIcon(task.status)} ${task.status}`)
-        console.log(`   ID: ${task.id}`)
-        if (task.description) {
-          console.log(`   Description: ${task.description}`)
+        // Check if response has the expected structure
+        if (response.data && response.data.task) {
+          const task = response.data.task
+          console.log('\n Updated Task Details:')
+          console.log(`   Title: ${task.title}`)
+          console.log(`    ${getStatusIcon(task.status)} ${task.status}`)
+          console.log(`   ID: ${task.id}`)
+          if (task.description) {
+            console.log(`    ${task.description}`)
+          }
+        } else {
+          console.log('\n Updated Task Details:')
+          console.log('   ID: ', taskId)
+          console.log('   Status: Updated successfully')
+          if (options.verbose) {
+            console.log('   Note: Full task details not available in response')
+          }
         }
 
-        console.log('💡 Use "codeguide task list" to see all tasks')
+        console.log(' Use "codeguide task list" to see all tasks')
       } catch (error) {
-        console.error('❌ Failed to update task')
+        console.error(' Failed to update task')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {
           const apiError = error as any
-          console.error('🔍 API Error Details:')
-          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
           console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
           console.error('   URL:', apiError.config?.url || 'Unknown')
           console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -1873,17 +2022,17 @@ Format the documentation in Markdown with proper headers, code examples, and str
           }
 
           if (apiError.message) {
-            console.error('   Error Message:', apiError.message)
+            console.error('   Error ', apiError.message)
           }
         } else if (error instanceof Error) {
-          console.error('🔍 Error Details:')
+          console.error(' Error Details:')
           console.error('   Type:', error.constructor.name)
-          console.error('   Message:', error.message)
+          console.error('   ', error.message)
           if (options.verbose && error.stack) {
             console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
           }
         } else {
-          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
         }
 
         process.exit(1)
@@ -1901,13 +2050,13 @@ Format the documentation in Markdown with proper headers, code examples, and str
         const currentDir = process.cwd()
 
         if (options.verbose) {
-          console.log('🔍 CodeGuide Init Details:')
+          console.log(' CodeGuide Init Details:')
           console.log('   Current Directory:', currentDir)
           console.log('   Project Title:', options.projectTitle || 'Auto-detected')
-          console.log('   Project Description:', options.projectDescription || 'Auto-generated')
+          console.log('   Project ', options.projectDescription || 'Auto-generated')
         }
 
-        console.log('🚀 Initializing CodeGuide CLI in current directory...')
+        console.log(' Initializing CodeGuide CLI in current directory...')
 
         // Auto-detect project title and description if not provided
         let projectTitle = options.projectTitle
@@ -1932,28 +2081,28 @@ Format the documentation in Markdown with proper headers, code examples, and str
         const agentMdContent = generateAgentMdContent(projectTitle, projectDescription)
         const agentMdPath = path.join(currentDir, 'AGENTS.md')
         fs.writeFileSync(agentMdPath, agentMdContent, 'utf8')
-        console.log('📄 Created: AGENTS.md')
+        console.log(' Created: AGENTS.md')
 
         console.log('')
-        console.log('✅ CodeGuide CLI initialization complete!')
-        console.log('📁 Current Directory:', currentDir)
-        console.log('📋 Project Title:', projectTitle)
+        console.log(' CodeGuide CLI initialization complete!')
+        console.log(' Current Directory:', currentDir)
+        console.log(' Project Title:', projectTitle)
         console.log('')
-        console.log('💡 Files created:')
+        console.log(' Files created:')
         console.log('   • AGENTS.md - AI agent guidelines and CLI usage instructions')
         console.log('')
-        console.log('🚀 Next steps:')
+        console.log(' Next steps:')
         console.log('   • Use "codeguide start" to create a new project')
         console.log('   • Use "codeguide generate" to generate documentation')
         console.log('   • Use "codeguide task list" to manage project tasks')
       } catch (error) {
-        console.error('❌ Failed to initialize CodeGuide CLI')
+        console.error(' Failed to initialize CodeGuide CLI')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {
           const apiError = error as any
-          console.error('🔍 API Error Details:')
-          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
           console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
           console.error('   URL:', apiError.config?.url || 'Unknown')
           console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -1963,17 +2112,17 @@ Format the documentation in Markdown with proper headers, code examples, and str
           }
 
           if (apiError.message) {
-            console.error('   Error Message:', apiError.message)
+            console.error('   Error ', apiError.message)
           }
         } else if (error instanceof Error) {
-          console.error('🔍 Error Details:')
+          console.error(' Error Details:')
           console.error('   Type:', error.constructor.name)
-          console.error('   Message:', error.message)
+          console.error('   ', error.message)
           if (options.verbose && error.stack) {
             console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
           }
         } else {
-          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
         }
 
         process.exit(1)
@@ -1999,7 +2148,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
         let useCurrentDirectory = false
 
         if (options.verbose) {
-          console.log('🔍 Documentation Setup Details:')
+          console.log(' Documentation Setup Details:')
           console.log('   Project ID:', projectId)
           console.log('   Current Directory:', currentDir)
         }
@@ -2010,7 +2159,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
           targetDir = options.directory
           useCurrentDirectory = targetDir === currentDir
           if (options.verbose) {
-            console.log('📁 Using specified directory:', targetDir)
+            console.log(' Using specified directory:', targetDir)
           }
         } else {
           // For interactive mode, we need to get project info first to ask the question
@@ -2020,12 +2169,14 @@ Format the documentation in Markdown with proper headers, code examples, and str
           // Check authentication
           const authApiKey = options.apiKey || savedConfig.apiKey
           if (!authApiKey) {
-            console.error('❌ Error: No API key found')
-            console.error('💡 Please login again to save your API key:')
+            console.error('Error: No API key found')
+            console.error('Please login again to save your API key:')
             console.error('   codeguide login --api-key YOUR_API_KEY')
             console.error('   or use --api-key option to provide an API key')
             console.error('')
-            console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+            console.error(
+              'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+            )
             process.exit(1)
           }
 
@@ -2037,8 +2188,8 @@ Format the documentation in Markdown with proper headers, code examples, and str
           // Get project information for directory naming
           try {
             const projectInfo = await tempCodeguide.projects.getProjectById(projectId)
-            console.log('📋 Project Title:', projectInfo.title)
-            console.log('📄 Project Description:', projectInfo.description.substring(0, 100) + '...')
+            console.log(' Project Title:', projectInfo.title)
+            console.log(' Project ', projectInfo.description.substring(0, 100) + '...')
 
             // Interactive mode - ask user where they want to save docs
             console.log('')
@@ -2050,7 +2201,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
 
             const answer = await new Promise<string>(resolve => {
               rl.question(
-                '📄 Do you want to add the docs to the current directory? (y/N): ',
+                ' Do you want to add the docs to the current directory? (y/N): ',
                 (answer: string) => {
                   rl.close()
                   resolve(answer.trim().toLowerCase())
@@ -2062,17 +2213,17 @@ Format the documentation in Markdown with proper headers, code examples, and str
 
             if (useCurrentDirectory) {
               targetDir = currentDir
-              console.log('📁 Using current directory:', targetDir)
+              console.log(' Using current directory:', targetDir)
             } else {
               // Create safe directory name from project title
               const safeDirName = toSafeDirectoryName(projectInfo.title)
               const uniqueDirName = createUniqueDirectory(currentDir, safeDirName)
               targetDir = path.join(currentDir, uniqueDirName)
-              console.log('📁 Creating new directory:', targetDir)
+              console.log(' Creating new directory:', targetDir)
             }
           } catch (error) {
-            console.error('❌ Failed to fetch project information')
-            console.error('💡 Please verify the project ID is correct')
+            console.error(' Failed to fetch project information')
+            console.error(' Please verify the project ID is correct')
             throw error
           }
         }
@@ -2080,14 +2231,14 @@ Format the documentation in Markdown with proper headers, code examples, and str
         // Validate target directory
         const validation = validateDirectory(targetDir)
         if (!validation.valid) {
-          console.error('❌ Error:', validation.error)
+          console.error(' Error:', validation.error)
           process.exit(1)
         }
 
         // Create target directory if it doesn't exist (for new directory mode)
         if (!useCurrentDirectory && !fs.existsSync(targetDir)) {
           fs.mkdirSync(targetDir, { recursive: true })
-          console.log(`✅ Created target directory: ${targetDir}`)
+          console.log(` Created target directory: ${targetDir}`)
         }
 
         // For non-interactive mode (when directory is specified), we need to authenticate and get project info
@@ -2099,12 +2250,14 @@ Format the documentation in Markdown with proper headers, code examples, and str
           // Check authentication
           const authApiKey = options.apiKey || savedConfig.apiKey
           if (!authApiKey) {
-            console.error('❌ Error: No API key found')
-            console.error('💡 Please login again to save your API key:')
+            console.error('Error: No API key found')
+            console.error('Please login again to save your API key:')
             console.error('   codeguide login --api-key YOUR_API_KEY')
             console.error('   or use --api-key option to provide an API key')
             console.error('')
-            console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+            console.error(
+              'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+            )
             process.exit(1)
           }
 
@@ -2113,16 +2266,16 @@ Format the documentation in Markdown with proper headers, code examples, and str
             databaseApiKey: authApiKey,
           })
 
-          console.log('🔐 Checking authentication...')
+          console.log(' Checking authentication...')
           const isHealthy = await codeguide.isHealthy()
           if (!isHealthy) {
-            console.error('❌ Error: Authentication failed or API service is not available')
-            console.error('💡 Please login again with a valid API key:')
+            console.error(' Error: Authentication failed or API service is not available')
+            console.error(' Please login again with a valid API key:')
             console.error('   codeguide login')
             process.exit(1)
           }
 
-          console.log('✅ Authentication successful')
+          console.log(' Authentication successful')
 
           // Get project information
           try {
@@ -2136,17 +2289,17 @@ Format the documentation in Markdown with proper headers, code examples, and str
               'Failed to fetch project information'
             )
           } catch (error) {
-            console.error('❌ Failed to fetch project information')
-            console.error('💡 Please verify the project ID is correct')
+            console.error(' Failed to fetch project information')
+            console.error(' Please verify the project ID is correct')
             throw error
           }
 
-          console.log('📋 Project Title:', project.title)
-          console.log('📄 Project Description:', project.description.substring(0, 100) + '...')
+          console.log(' Project Title:', project.title)
+          console.log(' Project ', project.description.substring(0, 100) + '...')
         }
 
-        console.log('📄 Setting up documentation from project...')
-        console.log('📝 Project ID:', projectId)
+        console.log(' Setting up documentation from project...')
+        console.log(' Project ID:', projectId)
 
         // Get saved credentials for the main operations
         const savedConfig = authStorage.getAuthConfig()
@@ -2154,12 +2307,14 @@ Format the documentation in Markdown with proper headers, code examples, and str
         // Check authentication
         const authApiKey = options.apiKey || savedConfig.apiKey
         if (!authApiKey) {
-          console.error('❌ Error: No API key found')
-          console.error('💡 Please login again to save your API key:')
+          console.error('Error: No API key found')
+          console.error('Please login again to save your API key:')
           console.error('   codeguide login --api-key YOUR_API_KEY')
           console.error('   or use --api-key option to provide an API key')
           console.error('')
-          console.error('🔑 Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
           process.exit(1)
         }
 
@@ -2182,8 +2337,8 @@ Format the documentation in Markdown with proper headers, code examples, and str
               'Failed to fetch project information'
             )
           } catch (error) {
-            console.error('❌ Failed to fetch project information')
-            console.error('💡 Please verify the project ID is correct')
+            console.error(' Failed to fetch project information')
+            console.error(' Please verify the project ID is correct')
             throw error
           }
         }
@@ -2192,13 +2347,13 @@ Format the documentation in Markdown with proper headers, code examples, and str
         const docsDir = path.join(targetDir, 'documentation')
         if (!fs.existsSync(docsDir)) {
           fs.mkdirSync(docsDir, { recursive: true })
-          console.log(`📁 Created documentation directory: ${docsDir}`)
+          console.log(` Created documentation directory: ${docsDir}`)
         } else {
-          console.log(`📁 Using existing documentation directory: ${docsDir}`)
+          console.log(` Using existing documentation directory: ${docsDir}`)
         }
 
         // Fetch project documents
-        console.log('📥 Fetching project documents...')
+        console.log(' Fetching project documents...')
         let documents
         try {
           documents = await withLoadingAnimation(
@@ -2213,7 +2368,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
             'Failed to fetch documents'
           )
         } catch (error) {
-          console.error('❌ Failed to fetch project documents')
+          console.error(' Failed to fetch project documents')
           throw error
         }
 
@@ -2248,45 +2403,66 @@ ${doc.content}
             saveDocument(docsDir, safeDocName, documentContent)
           })
 
-          console.log(`✅ Saved ${documents.data.length} documents to ${docsDir}`)
+          console.log(` Saved ${documents.data.length} documents to ${docsDir}`)
         } else {
-          console.log(`ℹ️  No documents found for this project`)
+          console.log(`  No documents found for this project`)
         }
 
         // Create codeguide.json configuration file in target directory
-        console.log('⚙️  Creating project configuration...')
+        console.log('  Creating project configuration...')
         createCodeguideConfig(targetDir, projectId, project?.title || 'Project')
 
         // Generate and save AGENTS.md
-        console.log('📋 Creating CLI documentation files...')
-        const agentMdContent = generateAgentMdContent(project?.title || 'Project', project?.description || 'A project managed by CodeGuide CLI')
+        console.log(' Creating CLI documentation files...')
+        const agentMdContent = generateAgentMdContent(
+          project?.title || 'Project',
+          project?.description || 'A project managed by CodeGuide CLI'
+        )
         const agentMdPath = path.join(targetDir, 'AGENTS.md')
         fs.writeFileSync(agentMdPath, agentMdContent, 'utf8')
-        console.log('📄 Created: AGENTS.md')
+        console.log(' Created: AGENTS.md')
 
         console.log('')
-        console.log('🎉 Documentation setup complete!')
-        console.log(`📁 Target Directory: ${targetDir}`)
-        console.log(`📄 Documentation Folder: ${docsDir}`)
-        console.log(`⚙️  Project Configuration: codeguide.json`)
-        console.log(`📄 Agent Guidelines: AGENTS.md`)
-        console.log(`🆔 Project ID: ${projectId}`)
-        console.log('💡 All documents have been saved to the documentation folder.')
-        console.log('🔗 View and manage tasks in the CodeGuide dashboard')
+        console.log(' Documentation setup complete!')
+        console.log(` Target Directory: ${targetDir}`)
+        console.log(` Documentation Folder: ${docsDir}`)
+        console.log(`  Project Configuration: codeguide.json`)
+        console.log(` Agent Guidelines: AGENTS.md`)
+        console.log(` Project ID: ${projectId}`)
+        console.log(' All documents have been saved to the documentation folder.')
+        console.log(' View and manage tasks in the CodeGuide dashboard')
         console.log('')
-        console.log('🚀 Next steps:')
+
+        // Add cleanup instructions if a subdirectory was created
+        if (!useCurrentDirectory) {
+          console.log('🧹 Cleanup Instructions:')
+          console.log(' Since this documentation was set up in a subdirectory, you may want to move the files to the project root:')
+          console.log('')
+          console.log('   1. Move essential files to the parent directory:')
+          console.log('      mv documentation/ ../')
+          console.log('      mv AGENTS.md ../')
+          console.log('      mv codeguide.json ../')
+          console.log('   2. Navigate to the parent directory:')
+          console.log('      cd ..')
+          console.log('   3. Remove the now-empty subdirectory:')
+          console.log('      rmdir $(basename "' + targetDir + '")')
+          console.log('')
+          console.log('   This will give you a cleaner project structure with all files at the root.')
+          console.log('')
+        }
+
+        console.log(' Next steps:')
         console.log('   • Read the documentation files to understand the project')
         console.log('   • Run "codeguide task list" to see project tasks')
-        console.log('   • Use "codeguide task start <task_id>" to start working on tasks')
-
+        console.log('   • Use "codeguide task update <task_id> --status in_progress" to start working on tasks')
       } catch (error) {
-        console.error('❌ Failed to set up documentation')
+        console.error(' Failed to set up documentation')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {
           const apiError = error as any
-          console.error('🔍 API Error Details:')
-          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
           console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
           console.error('   URL:', apiError.config?.url || 'Unknown')
           console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -2296,17 +2472,17 @@ ${doc.content}
           }
 
           if (apiError.message) {
-            console.error('   Error Message:', apiError.message)
+            console.error('   Error ', apiError.message)
           }
         } else if (error instanceof Error) {
-          console.error('🔍 Error Details:')
+          console.error(' Error Details:')
           console.error('   Type:', error.constructor.name)
-          console.error('   Message:', error.message)
+          console.error('   ', error.message)
           if (options.verbose && error.stack) {
             console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
           }
         } else {
-          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
         }
 
         process.exit(1)
@@ -2335,53 +2511,67 @@ ${doc.content}
         if (!projectId) {
           projectId = getProjectIdFromConfig(currentDir)
           if (!projectId) {
-            console.error('❌ No project ID found')
+            console.error(' No project ID found')
             console.error(
-              '💡 Either specify --project-id or run this command in a directory with codeguide.json'
+              ' Either specify --project-id or run this command in a directory with codeguide.json'
             )
             process.exit(1)
           }
         }
 
         if (options.verbose) {
-          console.log('🔍 Tasks List Details:')
-          console.log('   Project ID:', projectId)
-          console.log('   Current Directory:', currentDir)
-          console.log('   Status Filter:', options.status || 'All')
-          console.log('   Task Group Filter:', options.taskGroupId || 'All')
+          console.log('📋 Task List Details:')
+          console.log('  • Project ID:', projectId)
+          console.log('  • Current Directory:', currentDir)
+          console.log('  • Status Filter:', options.status || 'All')
+          console.log('  • Task Group Filter:', options.taskGroupId || 'All')
+        }
+
+        // Get saved credentials as highest priority
+        const savedConfig = authStorage.getAuthConfig()
+
+        // Check authentication first
+        const authApiKey = options.apiKey || savedConfig.apiKey
+        if (!authApiKey) {
+          console.error('Error: No API key found')
+          console.error('Please login again to save your API key:')
+          console.error('   codeguide login --api-key YOUR_API_KEY')
+          console.error('   or use --api-key option to provide an API key')
+          console.error('')
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
+          process.exit(1)
         }
 
         // Initialize API service
         const codeguide = new CodeGuide({
-          baseUrl: options.apiUrl,
-          apiKey: options.apiKey,
+          baseUrl: options.apiUrl || savedConfig.apiUrl || process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev',
+          databaseApiKey: authApiKey,
         })
 
         // Check authentication
         try {
           await codeguide.usage.healthCheck()
           if (options.verbose) {
-            console.log('✅ Authentication successful')
+            console.log(' Authentication successful')
           }
         } catch (error) {
-          console.error('❌ Authentication failed or API service is not available')
-          console.error('💡 Please login again with a valid API key:')
+          console.error(' Authentication failed or API service is not available')
+          console.error(' Please login again with a valid API key:')
           console.error('   codeguide login')
           process.exit(1)
         }
-
-        console.log('📋 Fetching tasks for project...')
-        console.log('📝 Project ID:', projectId)
 
         // Get tasks by project
         const response = await withLoadingAnimation(
           async () => {
             if (options.verbose) {
-              console.log('📤 API Request Details:')
-              console.log('   Endpoint: /project-tasks/by-project/{project_id}')
-              console.log('   Project ID:', projectId)
-              console.log('   Status Filter:', options.status || 'Not specified')
-              console.log('   Task Group Filter:', options.taskGroupId || 'Not specified')
+              console.log('\nAPI Request Details:')
+              console.log('  Endpoint: /project-tasks/by-project/{project_id}')
+              console.log('  Project ID:', projectId)
+              console.log('  Status Filter:', options.status || 'Not specified')
+              console.log('  Task Group Filter:', options.taskGroupId || 'Not specified')
             }
 
             const request = {
@@ -2393,10 +2583,13 @@ ${doc.content}
             const response = await codeguide.tasks.getTasksByProject(request)
 
             if (options.verbose) {
-              console.log('📥 API Response Details:')
-              console.log('   Status:', response.status)
-              console.log('   Task Groups:', response.data.task_groups?.length || 0)
-              console.log('   Tasks:', response.data.tasks?.length || 0)
+              const verboseTasks = Array.isArray(response.data) ? response.data : response.data?.tasks || []
+              const verboseTaskGroups = response.data?.task_groups || []
+              console.log('\nAPI Response Details:')
+              console.log('  Status:', response.status)
+              console.log('  Response Type:', Array.isArray(response.data) ? 'Direct Tasks Array' : 'Nested Structure')
+              console.log('  Task Groups:', verboseTaskGroups.length)
+              console.log('  Tasks:', verboseTasks.length)
             }
 
             return response
@@ -2406,74 +2599,80 @@ ${doc.content}
           'Failed to fetch tasks'
         )
 
-        console.log('✅ Tasks retrieved successfully!')
-        console.log('📋 Status:', response.status)
+        // Handle different response structures
+        const tasks = Array.isArray(response.data) ? response.data : response.data?.tasks || []
+        const taskGroups = response.data?.task_groups || []
 
-        // Display task groups
-        if (response.data.task_groups && response.data.task_groups.length > 0) {
-          console.log('\n📁 Task Groups:')
-          response.data.task_groups.forEach((group, index) => {
-            console.log(
-              `   ${index + 1}. ${group.name} (${group.project_tasks?.length || 0} tasks)`
-            )
-            if (options.verbose && group.description) {
-              console.log(`      Description: ${group.description}`)
+        // Group tasks by status for better organization
+        const tasksByStatus = tasks.reduce(
+          (acc: Record<string, any[]>, task: any) => {
+            if (!acc[task.status]) {
+              acc[task.status] = []
             }
-          })
-        } else {
-          console.log('\n📁 No task groups found')
-        }
+            acc[task.status].push(task)
+            return acc
+          },
+          {} as Record<string, any[]>
+        )
 
         // Display tasks
-        if (response.data.tasks && response.data.tasks.length > 0) {
+        if (tasks.length > 0) {
           console.log('\n📋 Tasks:')
 
-          // Group tasks by status for better organization
-          const tasksByStatus = response.data.tasks.reduce(
-            (acc, task) => {
-              if (!acc[task.status]) {
-                acc[task.status] = []
-              }
-              acc[task.status].push(task)
-              return acc
-            },
-            {} as Record<string, typeof response.data.tasks>
-          )
-
           // Display tasks by status
-          Object.entries(tasksByStatus).forEach(([status, tasks]) => {
+          Object.entries(tasksByStatus).forEach(([status, statusTasks]) => {
             const statusIcon = getStatusIcon(status)
-            console.log(`\n${statusIcon} ${status.toUpperCase()} (${tasks.length}):`)
-            tasks.forEach((task, index) => {
-              const groupName =
-                response.data.task_groups?.find(g => g.id === task.task_group_id)?.name || 'Unknown'
+            const tasksArray = statusTasks as any[]
+            console.log(`\n${statusIcon} ${status.toUpperCase()} (${tasksArray.length}):`)
+            tasksArray.forEach((task: any, index: number) => {
               console.log(`   ${index + 1}. ${task.title}`)
-              console.log(`      Group: ${groupName}`)
+              if (task.priority) {
+                console.log(`      Priority: ${task.priority.toUpperCase()}`)
+              }
               console.log(`      ID: ${task.id}`)
               if (task.description) {
-                console.log(
-                  `      Description: ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}`
-                )
+                console.log(`      Description: ${task.description}`)
+              }
+              if (task.created_at) {
+                const createdDate = new Date(task.created_at)
+                console.log(`      Created: ${isNaN(createdDate.getTime()) ? task.created_at : createdDate.toLocaleDateString()}`)
+              }
+              if (task.updated_at) {
+                const updatedDate = new Date(task.updated_at)
+                console.log(`      Updated: ${isNaN(updatedDate.getTime()) ? task.updated_at : updatedDate.toLocaleDateString()}`)
+              }
+              if (task.details) {
+                console.log(`      Details: ${task.details}`)
+              }
+              if (task.parent_task_id) {
+                console.log(`      Parent Task: ${task.parent_task_id}`)
+              }
+              if (task.ordinal !== undefined) {
+                console.log(`      Order: ${task.ordinal}`)
               }
               if (options.verbose) {
-                console.log(`      Created: ${new Date(task.created_at).toLocaleDateString()}`)
-                console.log(`      Updated: ${new Date(task.updated_at).toLocaleDateString()}`)
-                if (task.parent_task_id) {
-                  console.log(`      Parent Task: ${task.parent_task_id}`)
-                }
+                console.log(`      User ID: ${task.user_id}`)
+                console.log(`      Task Group ID: ${task.task_group_id}`)
               }
             })
           })
         } else {
-          console.log('\n📋 No tasks found')
+          console.log('\n📝 No tasks found')
+          console.log('   Run "codeguide task generate" to create tasks for your project')
         }
 
         // Summary
-        const totalTaskGroups = response.data.task_groups?.length || 0
-        const totalTasks = response.data.tasks?.length || 0
+        const totalTasks = tasks.length
         console.log('\n📊 Summary:')
-        console.log(`   Total Task Groups: ${totalTaskGroups}`)
-        console.log(`   Total Tasks: ${totalTasks}`)
+        console.log(`   • Total Tasks: ${totalTasks}`)
+
+        if (Object.keys(tasksByStatus).length > 1) {
+          console.log('\n   Tasks by Status:')
+          Object.entries(tasksByStatus).forEach(([status, statusTasks]) => {
+            const tasksArray = statusTasks as any[]
+            console.log(`   • ${status.toUpperCase()}: ${tasksArray.length}`)
+          })
+        }
 
         if (options.status) {
           const filteredTasks =
@@ -2481,15 +2680,15 @@ ${doc.content}
           console.log(`   Tasks with status '${options.status}': ${filteredTasks.length}`)
         }
 
-        console.log('💡 Use "codeguide task" to generate new tasks for this project')
+        console.log(' Use "codeguide task" to generate new tasks for this project')
       } catch (error) {
-        console.error('❌ Failed to fetch tasks')
+        console.error(' Failed to fetch tasks')
 
         // Enhanced error logging
         if (error && typeof error === 'object' && 'response' in error) {
           const apiError = error as any
-          console.error('🔍 API Error Details:')
-          console.error('   Status:', apiError.response?.status || 'Unknown')
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
           console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
           console.error('   URL:', apiError.config?.url || 'Unknown')
           console.error('   Method:', apiError.config?.method || 'Unknown')
@@ -2499,17 +2698,17 @@ ${doc.content}
           }
 
           if (apiError.message) {
-            console.error('   Error Message:', apiError.message)
+            console.error('   Error ', apiError.message)
           }
         } else if (error instanceof Error) {
-          console.error('🔍 Error Details:')
+          console.error(' Error Details:')
           console.error('   Type:', error.constructor.name)
-          console.error('   Message:', error.message)
+          console.error('   ', error.message)
           if (options.verbose && error.stack) {
             console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
           }
         } else {
-          console.error('🔍 Unknown Error:', JSON.stringify(error, null, 2))
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
         }
 
         process.exit(1)
@@ -2520,14 +2719,14 @@ ${doc.content}
   function getStatusIcon(status: string): string {
     switch (status.toLowerCase()) {
       case 'completed':
-        return '✅'
+        return ''
       case 'in_progress':
       case 'in-progress':
         return '🔄'
       case 'pending':
         return '⏳'
       default:
-        return '📋'
+        return ''
     }
   }
 }

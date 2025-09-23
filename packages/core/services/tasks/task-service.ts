@@ -18,8 +18,6 @@ import {
   GenerateTasksResponse,
   GetTasksByProjectRequest,
   GetTasksByProjectResponse,
-  StartTaskRequest,
-  StartTaskResponse,
   UpdateTaskRequest,
   UpdateTaskResponse,
 } from './task-types'
@@ -54,8 +52,48 @@ export class TaskService extends BaseService {
     return response.data
   }
 
+  async createTaskGroupWithCodespace(
+    request: CreateTaskGroupRequest,
+    codespaceService: any
+  ): Promise<TaskGroup> {
+    // First, create the basic task group
+    const taskGroupResponse = await this.post<TaskGroupResponse>('/task-groups', {
+      name: request.name,
+      description: request.description,
+      project_id: request.project_id,
+    })
+    let taskGroup = taskGroupResponse.data
+
+    // If codespace task creation is requested and project description is provided
+    if (request.include_codespace_task && request.project_description) {
+      try {
+        // Step 1: Generate codespace task title using project description
+        const titleResponse = await codespaceService.generateTaskTitle({
+          task_description: request.project_description,
+        })
+
+        // Step 2: Create codespace task using generated title and project description
+        const createTaskResponse = await codespaceService.createCodespaceTask({
+          title: titleResponse.title,
+          description: request.project_description,
+        })
+
+        // Step 3: Update task group with codespace_task_id
+        const updateResponse = await this.updateTaskGroup(taskGroup.id, {
+          codespace_task_id: createTaskResponse.task_id,
+        })
+        taskGroup = updateResponse
+      } catch (error) {
+        console.warn('Failed to create codespace task, but task group was created successfully:', error)
+        // Continue without codespace task if it fails
+      }
+    }
+
+    return taskGroup
+  }
+
   async updateTaskGroup(taskGroupId: string, request: UpdateTaskGroupRequest): Promise<TaskGroup> {
-    const response = await this.put<TaskGroupResponse>(`/task-groups/${taskGroupId}`, request)
+    const response = await this.put<TaskGroupResponse>(`/project-tasks/task-groups/${taskGroupId}`, request)
     return response.data
   }
 
@@ -129,11 +167,6 @@ export class TaskService extends BaseService {
 
     const url = `/project-tasks/by-project/${request.project_id}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     return this.get<GetTasksByProjectResponse>(url)
-  }
-
-  // Start Task
-  async startTask(request: StartTaskRequest): Promise<StartTaskResponse> {
-    return this.post<StartTaskResponse>(`/project-tasks/${request.task_id}/start`, request)
   }
 
   // Update Task

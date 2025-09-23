@@ -15,10 +15,10 @@ A powerful CLI tool for code guidance with programmatic API access. Get intellig
 
 ```bash
 # Install globally
-npm install -g @codeguide/cli
+npm install -g @codeguide/cli@0.0.11
 
 # Or install locally
-npm install @codeguide/cli
+npm install @codeguide/cli@0.0.11
 ```
 
 ## Quick Start
@@ -53,7 +53,7 @@ codeguide init .
 codeguide task list
 
 # Start working on a task
-codeguide task start <task_id>
+codeguide task update <task_id> --status in_progress
 
 # Update task progress
 codeguide task update <task_id> "your progress notes"
@@ -84,7 +84,7 @@ codeguide project get <project-id>
 codeguide task list
 
 # Start working on a task
-codeguide task start <task_id>
+codeguide task update <task_id> --status in_progress
 
 # Update task progress
 codeguide task update <task_id> [progress-notes]
@@ -122,8 +122,11 @@ codeguide health
 ### Authentication
 
 ```bash
-# Store authentication credentials
-codeguide auth login
+# Interactive login with API key setup
+codeguide login
+
+# Direct API key authentication
+codeguide login --api-key your-api-key
 
 # Check current authentication status
 codeguide auth status
@@ -216,7 +219,7 @@ cd my-web-app
 codeguide task list
 
 # Start first task
-codeguide task start task_001
+codeguide task update task_001 --status in_progress
 
 # Generate project outline
 codeguide generate outline

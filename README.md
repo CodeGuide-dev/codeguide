@@ -54,7 +54,7 @@ codeguide init my-project
 
 # View and manage tasks
 codeguide task list
-codeguide task start <task_id>
+codeguide task update <task_id> --status in_progress
 codeguide task update <task_id> "Progress notes"
 ```
 
@@ -106,7 +106,7 @@ codeguide generate [options]
 codeguide task list [options]
 
 # Start a task
-codeguide task start <task_id>
+codeguide task update <task_id> --status in_progress
 
 # Update a task
 codeguide task update <task_id> [options]
@@ -115,11 +115,17 @@ codeguide task update <task_id> [options]
 ### Authentication
 
 ```bash
+# Interactive login
+codeguide login
+
 # Login with API key
 codeguide login --api-key your-api-key
 
 # Check health
 codeguide health
+
+# Check authentication status
+codeguide auth status
 ```
 
 ### Usage Management
@@ -203,6 +209,18 @@ The CLI supports multiple authentication methods:
 3. **Clerk JWT Token** (lowest priority): JWT tokens
 
 Authentication configuration is automatically saved locally for convenience.
+
+### Interactive Authentication
+
+The CLI now supports interactive authentication setup:
+
+```bash
+# Interactive login with API key creation
+codeguide login
+
+# Direct API key authentication
+codeguide login --api-key your-api-key
+```
 
 ## Development
 
@@ -386,6 +404,19 @@ codeguide usage summary --start-date 2024-01-01 --end-date 2024-12-31
 MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.0.11
+
+- Bump version to 0.0.11
+- Add --api-key flag to login command for non-interactive authentication
+- Add interactive docs setup command with API key creation links
+- Fix TypeScript error in cancellation funnel service
+
+### v0.0.10
+
+- Enhanced task management system
+- Added codespace service for development environments
+- Improved error handling and type safety
 
 ### v0.0.1
 

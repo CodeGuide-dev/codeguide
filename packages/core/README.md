@@ -16,7 +16,7 @@ The core package for CodeGuide with programmatic API access. This package provid
 ## Installation
 
 ```bash
-npm install @codeguide/core
+npm install @codeguide/core@0.0.11
 ```
 
 ## Quick Start

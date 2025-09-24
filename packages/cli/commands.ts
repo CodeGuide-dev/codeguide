@@ -2245,16 +2245,30 @@ Format the documentation in Markdown with proper headers, code examples, and str
         }
 
         // Validate target directory
-        const validation = validateDirectory(targetDir)
-        if (!validation.valid) {
-          console.error(' Error:', validation.error)
-          process.exit(1)
-        }
+        if (useCurrentDirectory) {
+          // For current directory mode, validate that the directory exists
+          const validation = validateDirectory(targetDir)
+          if (!validation.valid) {
+            console.error(' Error:', validation.error)
+            process.exit(1)
+          }
+        } else {
+          // For new directory mode, validate that the parent directory exists
+          const parentDir = path.dirname(targetDir)
+          if (!fs.existsSync(parentDir)) {
+            console.error(' Error: Parent directory does not exist')
+            process.exit(1)
+          }
+          if (!fs.statSync(parentDir).isDirectory()) {
+            console.error(' Error: Parent path is not a directory')
+            process.exit(1)
+          }
 
-        // Create target directory if it doesn't exist (for new directory mode)
-        if (!useCurrentDirectory && !fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true })
-          console.log(` Created target directory: ${targetDir}`)
+          // Create target directory if it doesn't exist
+          if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true })
+            console.log(` Created target directory: ${targetDir}`)
+          }
         }
 
         // For non-interactive mode (when directory is specified), we need to authenticate and get project info

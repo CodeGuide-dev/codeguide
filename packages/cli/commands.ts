@@ -147,6 +147,7 @@ This continuous workflow ensures steady progress and prevents stagnation between
 - **Created with**: CodeGuide CLI
 - **Documentation**: Check the \`documentation/\` folder for generated project documentation
 - **AI Guidelines**: See \`AGENTS.md\` for AI development agent guidelines
+- **Tasks Data**: See \`tasks.json\` for project task structure and information
 
 ## Recommended Workflow
 
@@ -177,6 +178,9 @@ Once you've reviewed all the documentation and are ready to start development, y
    # Move codeguide.json to project root
    mv codeguide.json ../
 
+   # Move tasks.json to project root
+   mv tasks.json ../
+
    # Navigate to the parent directory
    cd ..
    \`\`\`
@@ -198,6 +202,7 @@ project-root/
 ├── documentation/          # Project documentation
 ├── AGENTS.md               # AI development guidelines
 ├── codeguide.json          # CodeGuide project configuration
+├── tasks.json              # Project tasks data
 └── (your source code files)
 \`\`\`
 
@@ -2384,7 +2389,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
         }
 
         // Save documents to the documentation directory
-        console.log('💾 Saving documents...')
+        console.log(' Saving documents...')
         if (documents.data && Array.isArray(documents.data) && documents.data.length > 0) {
           documents.data.forEach((doc: any) => {
             // Skip implementation_plan.md files
@@ -2419,6 +2424,39 @@ ${doc.content}
           console.log(`  No documents found for this project`)
         }
 
+        // Fetch project tasks and save as tasks.json
+        console.log(' Fetching project tasks...')
+        let tasks
+        try {
+          tasks = await withLoadingAnimation(
+            async () => {
+              const response = await codeguide.tasks.getTasksByProject({
+                project_id: projectId,
+              })
+              return response
+            },
+            'Fetching tasks...',
+            'Tasks fetched successfully',
+            'Failed to fetch tasks'
+          )
+        } catch (error) {
+          console.warn('  Failed to fetch project tasks, but continuing with documentation setup')
+          console.warn('  You can view tasks later using: codeguide task list')
+        }
+
+        // Save tasks as tasks.json file
+        if (tasks && tasks.data) {
+          const tasksJsonPath = path.join(targetDir, 'tasks.json')
+          fs.writeFileSync(tasksJsonPath, JSON.stringify(tasks.data, null, 2), 'utf8')
+          console.log(' Created: tasks.json')
+
+          const taskCount = tasks.data.tasks ? tasks.data.tasks.length : 0
+          const taskGroupCount = tasks.data.task_groups ? tasks.data.task_groups.length : 0
+          console.log(`  Found ${taskCount} tasks in ${taskGroupCount} task groups`)
+        } else {
+          console.log('  No tasks found for this project')
+        }
+
         // Create codeguide.json configuration file in target directory
         console.log('  Creating project configuration...')
         createCodeguideConfig(targetDir, projectId, project?.title || 'Project')
@@ -2439,8 +2477,10 @@ ${doc.content}
         console.log(` Documentation Folder: ${docsDir}`)
         console.log(`  Project Configuration: codeguide.json`)
         console.log(` Agent Guidelines: AGENTS.md`)
+        console.log(` Project Tasks: tasks.json`)
         console.log(` Project ID: ${projectId}`)
         console.log(' All documents have been saved to the documentation folder.')
+        console.log(' Tasks data has been saved to tasks.json for reference.')
         console.log(' View and manage tasks in the CodeGuide dashboard')
         console.log('')
 
@@ -2453,6 +2493,7 @@ ${doc.content}
           console.log('      mv documentation/ ../')
           console.log('      mv AGENTS.md ../')
           console.log('      mv codeguide.json ../')
+          console.log('      mv tasks.json ../')
           console.log('   2. Navigate to the parent directory:')
           console.log('      cd ..')
           console.log('   3. Remove the now-empty subdirectory:')

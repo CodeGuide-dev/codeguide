@@ -131,6 +131,16 @@ When you complete a task, mark it as completed:
 codeguide task update <task_id> --status completed
 \`\`\`
 
+### 4. Continue the Workflow
+**Important**: After completing a task, immediately continue to the next available task. Keep this cycle going until all tasks are completed:
+
+1. **Complete current task** → Mark as completed
+2. **Choose next task** → Pick from remaining pending tasks
+3. **Start next task** → Set status to in_progress
+4. **Repeat** → Continue until no tasks remain
+
+This continuous workflow ensures steady progress and prevents stagnation between tasks.
+
 ## Project Information
 
 - **Project ID**: ${projectId}
@@ -145,7 +155,8 @@ codeguide task update <task_id> --status completed
 3. **Start Tasks**: Use \`codeguide task update <task_id> --status in_progress\` to begin work on a task
 4. **Update Progress**: Keep your task progress updated as you work
 5. **Complete Tasks**: Mark tasks as completed when finished
-6. **Generate Documentation**: Use \`codeguide generate\` for new features
+6. **Continue to Next Task**: After completing a task, immediately start the next available task until all tasks are done
+7. **Generate Documentation**: Use \`codeguide generate\` for new features
 
 ## 🧹 Cleanup Instructions
 

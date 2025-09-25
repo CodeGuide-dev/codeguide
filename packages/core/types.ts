@@ -87,13 +87,11 @@ export interface CreateApiKeyResponse {
 }
 
 export interface ApiKeyPermissionResponse {
-  status: string
-  data: {
-    can_create: boolean
-    reason?: string
-    current_keys_count?: number
-    max_keys_allowed?: number
-  }
+  success: boolean
+  can_create: boolean
+  reason?: string
+  current_keys_count?: number
+  max_keys_allowed?: number
 }
 
 export interface ApiKeyResponse {
@@ -111,7 +109,14 @@ export interface RevokeApiKeyResponse {
 export interface Subscription {
   id: string
   user_id: string
-  status: 'active' | 'canceled' | 'past_due' | 'unpaid' | 'trialing' | 'incomplete' | 'incomplete_expired'
+  status:
+    | 'active'
+    | 'canceled'
+    | 'past_due'
+    | 'unpaid'
+    | 'trialing'
+    | 'incomplete'
+    | 'incomplete_expired'
   metadata: Record<string, any>
   price_id: string
   quantity: number

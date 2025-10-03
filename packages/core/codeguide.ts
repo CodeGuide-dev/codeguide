@@ -87,6 +87,7 @@ export class CodeGuide {
     return this.tasks.createTaskGroupWithCodespace(request, this.codespace)
   }
 
+  
   setOptions(options: Partial<CodeGuideOptions>): void {
     this.options = { ...this.options, ...options }
   }

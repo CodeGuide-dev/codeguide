@@ -9,6 +9,8 @@ import {
   PaginatedProjectsResponse,
   GetProjectDocumentsRequest,
   GetProjectDocumentsResponse,
+  ConnectRepositoryRequest,
+  ConnectRepositoryResponse,
 } from './project-types'
 
 export class ProjectService extends BaseService {
@@ -63,5 +65,40 @@ export class ProjectService extends BaseService {
 
     const url = `/projects/${projectId}/documents${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     return this.get<GetProjectDocumentsResponse>(url)
+  }
+
+  async connectRepository(
+    projectId: string,
+    request: ConnectRepositoryRequest
+  ): Promise<ConnectRepositoryResponse> {
+    this.validateConnectRepositoryRequest(request)
+    const response = await this.post<ConnectRepositoryResponse>(`/projects/${projectId}/repository`, request)
+    return response
+  }
+
+  private validateConnectRepositoryRequest(request: ConnectRepositoryRequest): void {
+    if (!request.repo_url) {
+      throw new Error('Repository URL is required')
+    }
+
+    if (!request.branch) {
+      throw new Error('Branch name is required')
+    }
+
+    // Validate GitHub URL format
+    const githubUrlPattern = /^https:\/\/github\.com\/[^\/]+\/[^\/]+\/?$/
+    if (!githubUrlPattern.test(request.repo_url)) {
+      throw new Error('Repository URL must be a valid GitHub URL (e.g., https://github.com/user/repo)')
+    }
+
+    // Validate branch name format (basic validation)
+    if (!/^[a-zA-Z0-9._-]+$/.test(request.branch)) {
+      throw new Error('Branch name contains invalid characters')
+    }
+
+    // Validate GitHub token format if provided
+    if (request.github_token && !request.github_token.startsWith('ghp_') && !request.github_token.startsWith('gho_') && !request.github_token.startsWith('ghu_') && !request.github_token.startsWith('ghs_') && !request.github_token.startsWith('ghr_')) {
+      throw new Error('GitHub token must be a valid personal access token')
+    }
   }
 }

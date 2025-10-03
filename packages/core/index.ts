@@ -10,3 +10,6 @@ dotenv.config({
 export { CodeGuide } from './codeguide'
 export * from './services'
 export * from './types'
+
+// Export commonly used types for convenience
+export type { ConnectRepositoryRequest, ConnectRepositoryResponse } from './services/projects/project-types'

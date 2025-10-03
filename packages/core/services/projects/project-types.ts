@@ -106,3 +106,22 @@ export interface PaginatedProjectsResponse {
     total_pages: number
   }
 }
+
+export interface ConnectRepositoryRequest {
+  repo_url: string
+  branch: string
+  github_token?: string
+}
+
+export interface ConnectRepositoryResponse {
+  status: string
+  data: {
+    id: string
+    project_id: string
+    repo_url: string
+    branch: string
+    connection_status: 'pending' | 'connected' | 'failed'
+    created_at: string
+    updated_at: string
+  }
+}

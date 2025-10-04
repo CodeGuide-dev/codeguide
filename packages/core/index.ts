@@ -13,3 +13,10 @@ export * from './types'
 
 // Export commonly used types for convenience
 export type { ConnectRepositoryRequest, ConnectRepositoryResponse } from './services/projects/project-types'
+export type {
+  CreateCodespaceTaskRequestV2 as CreateCodespaceTaskRequest,
+  CreateCodespaceTaskResponseV2 as CreateCodespaceTaskResponse,
+  CreateBackgroundCodespaceTaskRequest,
+  CreateBackgroundCodespaceTaskResponse,
+  ModelApiKey
+} from './services/codespace/codespace-types'

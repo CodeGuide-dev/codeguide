@@ -18,5 +18,9 @@ export type {
   CreateCodespaceTaskResponseV2 as CreateCodespaceTaskResponse,
   CreateBackgroundCodespaceTaskRequest,
   CreateBackgroundCodespaceTaskResponse,
-  ModelApiKey
+  ModelApiKey,
+  GetCodespaceTaskResponse,
+  CodespaceTaskData,
+  TechnicalDocument,
+  GetProjectTasksByCodespaceResponse
 } from './services/codespace/codespace-types'

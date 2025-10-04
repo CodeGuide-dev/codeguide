@@ -2781,6 +2781,190 @@ ${doc.content}
       }
     })
 
+  // Codespace commands
+  const codespaceProgram = program
+    .command('codespace')
+    .description('Manage codespace tasks')
+    .option(
+      '--api-url <url>',
+      'API base URL (overrides saved config and env var)',
+    )
+    .option(
+      '--api-key <key>',
+      'API key (overrides saved config and env var)',
+    )
+
+  // codespace get - Get a codespace task by ID
+  codespaceProgram
+    .command('get')
+    .description('Get a codespace task by its ID')
+    .argument('<codespace_task_id>', 'Codespace task ID to fetch')
+    .option('-v, --verbose', 'Verbose output')
+    .option('--include-subtasks', 'Include subtasks for the codespace task')
+    .action(async (codespaceTaskId, options) => {
+      try {
+        // Get saved credentials as highest priority
+        const savedConfig = authStorage.getAuthConfig()
+        const authApiKey =
+          options.apiKey || savedConfig.apiKey || process.env.CODEGUIDE_API_KEY
+
+        if (!authApiKey) {
+          console.error(' Error: No API key provided')
+          console.error(' Please provide an API key using:')
+          console.error('  1. --api-key flag')
+          console.error('  2. CODEGUIDE_API_KEY environment variable')
+          console.error(
+            '  3. Running "codeguide login" to save credentials'
+          )
+          console.error(
+            'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+          )
+          process.exit(1)
+        }
+
+        // Initialize API service
+        const codeguide = new CodeGuide({
+          baseUrl: options.apiUrl || savedConfig.apiUrl || process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev',
+          databaseApiKey: authApiKey,
+        })
+
+        if (options.verbose) {
+          console.log(' Fetching codespace task...')
+          console.log('  Codespace Task ID:', codespaceTaskId)
+          console.log('  Include Subtasks:', options.includeSubtasks || false)
+        }
+
+        // Fetch codespace task
+        const response = await withLoadingAnimation(
+          async () => {
+            return await codeguide.codespace.getCodespaceTask(codespaceTaskId)
+          },
+          'Fetching codespace task...',
+          'Codespace task fetched successfully',
+          'Failed to fetch codespace task'
+        )
+
+        if (options.verbose) {
+          console.log('\nAPI Response Details:')
+          console.log('  Status:', response.status)
+        }
+
+        // Display task details
+        if (response.data) {
+          const task = response.data
+          console.log('\n📋 Codespace Task Details:')
+          console.log(`   Title: ${task.title}`)
+          console.log(`    ${getStatusIcon(task.status)} ${task.status}`)
+          console.log(`   ID: ${task.id}`)
+          console.log(`   Progress: ${task.progress}`)
+          console.log(`   Project ID: ${task.project_id}`)
+          console.log(`   Working Branch: ${task.working_branch}`)
+          console.log(`   Base Branch: ${task.base_branch}`)
+          console.log(`   Execution Mode: ${task.execution_mode}`)
+
+          if (task.task_description) {
+            console.log(`   Description: ${task.task_description}`)
+          }
+
+          if (task.created_at) {
+            const createdDate = new Date(task.created_at)
+            console.log(`   Created: ${isNaN(createdDate.getTime()) ? task.created_at : createdDate.toLocaleString()}`)
+          }
+
+          if (task.updated_at) {
+            const updatedDate = new Date(task.updated_at)
+            console.log(`   Updated: ${isNaN(updatedDate.getTime()) ? task.updated_at : updatedDate.toLocaleString()}`)
+          }
+
+          if (task.work_completed_at) {
+            const completedDate = new Date(task.work_completed_at)
+            console.log(`   Work Completed: ${isNaN(completedDate.getTime()) ? task.work_completed_at : completedDate.toLocaleString()}`)
+          }
+
+          if (task.pull_request_url) {
+            console.log(`   Pull Request: ${task.pull_request_url}`)
+          }
+
+          if (task.technical_document) {
+            console.log('\n📄 Technical Document:')
+            const doc = task.technical_document
+            console.log(`   Version: ${doc.version}`)
+            console.log(`   Generated: ${new Date(doc.generated_at).toLocaleString()}`)
+            console.log(`   Complexity: ${doc.task_summary.complexity_assessment}`)
+            console.log(`   Estimated Scope: ${doc.task_summary.estimated_scope}`)
+          }
+
+          // Include subtasks if requested
+          if (options.includeSubtasks) {
+            console.log('\n🔍 Fetching subtasks...')
+            try {
+              const subtasksResponse = await withLoadingAnimation(
+                async () => {
+                  return await codeguide.codespace.getProjectTasksByCodespace(codespaceTaskId)
+                },
+                'Fetching subtasks...',
+                'Subtasks fetched successfully',
+                'Failed to fetch subtasks'
+              )
+
+              if (subtasksResponse.data && subtasksResponse.data.length > 0) {
+                console.log(`\n📝 Subtasks (${subtasksResponse.data.length}):`)
+                subtasksResponse.data.forEach((subtask: any, index: number) => {
+                  console.log(`   ${index + 1}. ${subtask.title || subtask.id}`)
+                  console.log(`      ${getStatusIcon(subtask.status)} ${subtask.status}`)
+                  console.log(`      ID: ${subtask.id}`)
+                  if (subtask.description) {
+                    console.log(`      Description: ${subtask.description}`)
+                  }
+                })
+              } else {
+                console.log('\n📝 No subtasks found')
+              }
+            } catch (error) {
+              console.warn('  Failed to fetch subtasks, but main task details are available')
+              if (options.verbose) {
+                console.error('  Subtask error:', error instanceof Error ? error.message : String(error))
+              }
+            }
+          }
+        } else {
+          console.log('\n❌ No codespace task data found')
+        }
+
+      } catch (error) {
+        console.error(' Failed to fetch codespace task')
+
+        // Enhanced error logging
+        if (error && typeof error === 'object' && 'response' in error) {
+          const apiError = error as any
+          console.error(' API Error Details:')
+          console.error('   ', apiError.response?.status || 'Unknown')
+          console.error('   Status Text:', apiError.response?.statusText || 'Unknown')
+          console.error('   URL:', apiError.config?.url || 'Unknown')
+          console.error('   Method:', apiError.config?.method || 'Unknown')
+
+          if (apiError.response?.data) {
+            console.error('   Response Data:', JSON.stringify(apiError.response.data, null, 2))
+          }
+
+          if (apiError.message) {
+            console.error('   Error ', apiError.message)
+          }
+        } else if (error instanceof Error) {
+          console.error(' Error Details:')
+          console.error('   Type:', error.constructor.name)
+          console.error('   ', error.message)
+          if (options.verbose && error.stack) {
+            console.error('   Stack:', error.stack.split('\n').slice(0, 5).join('\n'))
+          }
+        } else {
+          console.error(' Unknown Error:', JSON.stringify(error, null, 2))
+        }
+
+        process.exit(1)
+      }
+    })
+
   // Helper function to get status icons
   function getStatusIcon(status: string): string {
     switch (status.toLowerCase()) {

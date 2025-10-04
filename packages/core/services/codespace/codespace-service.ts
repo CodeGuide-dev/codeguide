@@ -8,6 +8,8 @@ import {
   CreateCodespaceTaskResponseV2,
   CreateBackgroundCodespaceTaskRequest,
   CreateBackgroundCodespaceTaskResponse,
+  GetCodespaceTaskResponse,
+  GetProjectTasksByCodespaceResponse,
 } from './codespace-types'
 
 export class CodespaceService extends BaseService {
@@ -27,6 +29,20 @@ export class CodespaceService extends BaseService {
   async createBackgroundCodespaceTask(request: CreateBackgroundCodespaceTaskRequest): Promise<CreateBackgroundCodespaceTaskResponse> {
     this.validateCodespaceTaskRequest(request)
     return this.post<CreateBackgroundCodespaceTaskResponse>('/codespace/task/background', request)
+  }
+
+  async getCodespaceTask(codespaceTaskId: string): Promise<GetCodespaceTaskResponse> {
+    if (!codespaceTaskId) {
+      throw new Error('codespace_task_id is required')
+    }
+    return this.get<GetCodespaceTaskResponse>(`/codespace/task/${codespaceTaskId}`)
+  }
+
+  async getProjectTasksByCodespace(codespaceTaskId: string): Promise<GetProjectTasksByCodespaceResponse> {
+    if (!codespaceTaskId) {
+      throw new Error('codespace_task_id is required')
+    }
+    return this.get<GetProjectTasksByCodespaceResponse>(`/project-tasks/by-codespace/${codespaceTaskId}`)
   }
 
   private validateCodespaceTaskRequest(request: CreateCodespaceTaskRequestV2): void {

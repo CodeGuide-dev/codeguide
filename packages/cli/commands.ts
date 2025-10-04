@@ -1539,30 +1539,47 @@ Format the documentation in Markdown with proper headers, code examples, and str
     .option('--project-id <id>', 'Project ID (overrides codeguide.json)')
     .option('--status <status>', 'Filter by task status (e.g., pending, in_progress, completed)')
     .option('--task-group-id <id>', 'Filter by task group ID')
+    .option('--codespace-task-id <id>', 'Get tasks by codespace task ID (uses getProjectTasksByCodespace)')
     .option('-v, --verbose', 'Verbose output')
     .action(async options => {
       try {
         const currentDir = process.cwd()
 
-        // Get project ID from command line or codeguide.json
-        let projectId = options.projectId
-        if (!projectId) {
-          projectId = getProjectIdFromConfig(currentDir)
-          if (!projectId) {
-            console.error(' No project ID found')
-            console.error(
-              ' Either specify --project-id or run this command in a directory with codeguide.json'
-            )
-            process.exit(1)
-          }
-        }
+        // Handle codespace task ID case
+        let useCodespaceTasks = false
+        let projectId: string | null | undefined
 
-        if (options.verbose) {
-          console.log('📋 Task List Details:')
-          console.log('  • Project ID:', projectId)
-          console.log('  • Current Directory:', currentDir)
-          console.log('  • Status Filter:', options.status || 'All')
-          console.log('  • Task Group Filter:', options.taskGroupId || 'All')
+        if (options.codespaceTaskId) {
+          // When using codespace task ID, we don't need project ID validation
+          useCodespaceTasks = true
+
+          if (options.verbose) {
+            console.log('📋 Task List Details:')
+            console.log('  • Codespace Task ID:', options.codespaceTaskId)
+            console.log('  • Current Directory:', currentDir)
+            console.log('  • Mode: Getting subtasks by codespace task ID')
+          }
+        } else {
+          // Get project ID from command line or codeguide.json
+          projectId = options.projectId
+          if (!projectId) {
+            projectId = getProjectIdFromConfig(currentDir)
+            if (!projectId) {
+              console.error(' No project ID found')
+              console.error(
+                ' Either specify --project-id, --codespace-task-id, or run this command in a directory with codeguide.json'
+              )
+              process.exit(1)
+            }
+          }
+
+          if (options.verbose) {
+            console.log('📋 Task List Details:')
+            console.log('  • Project ID:', projectId)
+            console.log('  • Current Directory:', currentDir)
+            console.log('  • Status Filter:', options.status || 'All')
+            console.log('  • Task Group Filter:', options.taskGroupId || 'All')
+          }
         }
 
         // Get saved credentials as highest priority
@@ -1639,7 +1656,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
 
         // Handle different response structures
         const tasks = Array.isArray(response.data) ? response.data : response.data?.tasks || []
-        const taskGroups = response.data?.task_groups || []
+        const taskGroups = useCodespaceTasks ? [] : response.data?.task_groups || []
 
         // Group tasks by status for better organization
         const tasksByStatus = tasks.reduce(
@@ -2148,7 +2165,7 @@ Format the documentation in Markdown with proper headers, code examples, and str
   program
     .command('docs')
     .description('Set up documentation from a project ID')
-    .argument('<project_id>', 'Project ID to download documentation from')
+    .argument('[project_id]', 'Project ID to download documentation from (can be omitted if using --codespace-task-id)')
     .option('-d, --directory <directory>', 'Target directory (default: interactive prompt)')
     .option('-v, --verbose', 'Verbose output')
     .option(
@@ -2157,11 +2174,68 @@ Format the documentation in Markdown with proper headers, code examples, and str
       process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
     )
     .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
+    .option('--codespace-task-id <id>', 'Codespace task ID to extract project_id from')
     .action(async (projectId, options) => {
       try {
         const currentDir = process.cwd()
         let targetDir: string
         let useCurrentDirectory = false
+
+        // Handle codespace task ID case
+        if (options.codespaceTaskId && !projectId) {
+          // Get saved credentials
+          const savedConfig = authStorage.getAuthConfig()
+          const authApiKey = options.apiKey || savedConfig.apiKey || process.env.CODEGUIDE_API_KEY
+
+          if (!authApiKey) {
+            console.error('Error: No API key found')
+            console.error('Please login again to save your API key:')
+            console.error('   codeguide login --api-key YOUR_API_KEY')
+            console.error('   or use --api-key option to provide an API key')
+            console.error('')
+            console.error(
+              'Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys'
+            )
+            process.exit(1)
+          }
+
+          const tempCodeguide = new CodeGuide({
+            baseUrl: options.apiUrl || savedConfig.apiUrl || process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev',
+            databaseApiKey: authApiKey,
+          })
+
+          if (options.verbose) {
+            console.log(' Fetching project ID from codespace task...')
+            console.log('   Codespace Task ID:', options.codespaceTaskId)
+          }
+
+          try {
+            const codespaceResponse = await tempCodeguide.codespace.getCodespaceTask(options.codespaceTaskId)
+            if (codespaceResponse.data && codespaceResponse.data.project_id) {
+              projectId = codespaceResponse.data.project_id
+              if (options.verbose) {
+                console.log('   Extracted Project ID:', projectId)
+                console.log('   Current Directory:', currentDir)
+              }
+            } else {
+              console.error('Error: Could not extract project_id from codespace task')
+              process.exit(1)
+            }
+          } catch (error) {
+            console.error('Error: Failed to fetch codespace task')
+            if (options.verbose && error instanceof Error) {
+              console.error('   Details:', error.message)
+            }
+            process.exit(1)
+          }
+        } else if (!projectId && !options.codespaceTaskId) {
+          console.error('Error: Either project_id or --codespace-task-id must be provided')
+          console.error('')
+          console.error('Usage examples:')
+          console.error('  codeguide docs <project_id>')
+          console.error('  codeguide docs --codespace-task-id <codespace_task_id>')
+          process.exit(1)
+        }
 
         if (options.verbose) {
           console.log(' Documentation Setup Details:')
@@ -2572,6 +2646,9 @@ ${doc.content}
       try {
         const currentDir = process.cwd()
 
+        // For standalone tasks command, codespace functionality is not supported
+        const useCodespaceTasks = false
+
         // Get project ID from command line or codeguide.json
         let projectId = options.projectId
         if (!projectId) {
@@ -2667,7 +2744,7 @@ ${doc.content}
 
         // Handle different response structures
         const tasks = Array.isArray(response.data) ? response.data : response.data?.tasks || []
-        const taskGroups = response.data?.task_groups || []
+        const taskGroups = useCodespaceTasks ? [] : response.data?.task_groups || []
 
         // Group tasks by status for better organization
         const tasksByStatus = tasks.reduce(

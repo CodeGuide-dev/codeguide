@@ -2559,12 +2559,22 @@ ${doc.content}
         fs.writeFileSync(agentMdPath, agentMdContent, 'utf8')
         console.log(' Created: AGENTS.md')
 
+        // Generate and save instructions.md
+        const instructionsMdContent = generateInstructionsMdContent(
+          project?.title || 'Project',
+          projectId
+        )
+        const instructionsMdPath = path.join(targetDir, 'instructions.md')
+        fs.writeFileSync(instructionsMdPath, instructionsMdContent, 'utf8')
+        console.log(' Created: instructions.md')
+
         console.log('')
         console.log(' Documentation setup complete!')
         console.log(` Target Directory: ${targetDir}`)
         console.log(` Documentation Folder: ${docsDir}`)
         console.log(`  Project Configuration: codeguide.json`)
         console.log(` Agent Guidelines: AGENTS.md`)
+        console.log(` Getting Started Guide: instructions.md`)
         console.log(` Project Tasks: tasks.json`)
         console.log(` Project ID: ${projectId}`)
         console.log(' All documents have been saved to the documentation folder.')
@@ -2580,6 +2590,7 @@ ${doc.content}
           console.log('   1. Move essential files to the parent directory:')
           console.log('      mv documentation/ ../')
           console.log('      mv AGENTS.md ../')
+          console.log('      mv instructions.md ../')
           console.log('      mv codeguide.json ../')
           console.log('      mv tasks.json ../')
           console.log('   2. Navigate to the parent directory:')

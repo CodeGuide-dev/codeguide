@@ -17,6 +17,7 @@ export { ApiKeyEnhancedService } from './api-key-enhanced'
 export { SubscriptionService } from './subscriptions'
 export { CancellationFunnelService } from './cancellation-funnel'
 export { CodespaceService } from './codespace'
+export { ExternalTokenService } from './external-tokens'
 
 // Re-export all types for convenience
 export * from './generation'
@@ -28,3 +29,4 @@ export * from './api-key-enhanced'
 export * from './subscriptions'
 export * from './cancellation-funnel'
 export * from './codespace'
+export * from './external-tokens'

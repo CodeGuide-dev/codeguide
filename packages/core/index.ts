@@ -24,3 +24,17 @@ export type {
   TechnicalDocument,
   GetProjectTasksByCodespaceResponse
 } from './services/codespace/codespace-types'
+
+// Export commonly used external tokens types for convenience
+export type {
+  StoreExternalTokenRequest,
+  StoreExternalTokenResponse,
+  ListTokensQuery,
+  ListTokensResponse,
+  ValidateTokenRequest,
+  ValidateTokenResponse,
+  FindBestMatchRequest,
+  FindBestMatchResponse,
+  Platform,
+  TokenType
+} from './services/external-tokens/external-tokens-types'

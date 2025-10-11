@@ -16,6 +16,7 @@ import {
   SubscriptionService,
   CancellationFunnelService,
   CodespaceService,
+  ExternalTokenService,
 } from './services'
 import { APIServiceConfig, CodeGuideOptions } from './types'
 
@@ -29,6 +30,7 @@ export class CodeGuide {
   public subscription: SubscriptionService
   public cancellationFunnel: CancellationFunnelService
   public codespace: CodespaceService
+  public externalTokens: ExternalTokenService
   private options: CodeGuideOptions
 
   constructor(config: APIServiceConfig, options: CodeGuideOptions = {}) {
@@ -44,6 +46,7 @@ export class CodeGuide {
     this.subscription = new SubscriptionService(config)
     this.cancellationFunnel = new CancellationFunnelService(config)
     this.codespace = new CodespaceService(config)
+    this.externalTokens = new ExternalTokenService(config)
   }
 
   // Convenience method for backward compatibility

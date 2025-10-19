@@ -4,29 +4,37 @@ A powerful CLI tool for code guidance with programmatic API access. Get intellig
 
 ## Features
 
-- 🔑 **API Key Management**: Create, manage, and revoke API keys
-- 📝 **Project Generation**: Create structured projects with documentation
-- 🎯 **Task Management**: Organize and track development tasks
-- 📊 **Usage Analytics**: Monitor your API usage and credits
-- 🔍 **Repository Analysis**: Analyze code repositories
-- 🎨 **Code Generation**: Generate code with AI assistance
+- 🔑 **API Key Management**: Create, manage, and revoke API keys.
+- 🤖 **Codespace Tasks**: Create and manage AI-powered coding tasks directly from the CLI.
+- 📝 **Project Management**: Initialize projects, list them, and view details.
+- 🎯 **Task Management**: Organize and track development tasks.
+- 🎨 **Code Generation**: Generate project outlines and documentation.
+- 🔍 **Repository Analysis**: Analyze code repositories.
+- 🔐 **External Token Management**: Securely store and manage external tokens (e.g., GitHub, GitLab).
+- 💳 **Subscription Management**: Check your current subscription status.
+- 📊 **Usage Analytics**: Monitor your API usage and credits.
 
 ## Installation
 
 ```bash
 # Install globally
-npm install -g @codeguide/cli@0.0.11
+npm install -g @codeguide/cli@0.0.23
 
 # Or install locally
-npm install @codeguide/cli@0.0.11
+npm install @codeguide/cli@0.0.23
 ```
 
 ## Quick Start
 
 ### 1. Authenticate
 
-First, set up your API credentials:
+First, set up your API credentials. The CLI will prompt you if credentials are not found.
 
+```bash
+codeguide login
+```
+
+You can also set them via environment variables:
 ```bash
 # Using database API key (recommended)
 export CODEGUIDE_DATABASE_API_KEY="sk_your_database_api_key"
@@ -46,17 +54,14 @@ codeguide init my-project
 codeguide init .
 ```
 
-### 3. Start Working
+### 3. Create a Codespace Task
 
 ```bash
-# View available tasks
-codeguide task list
+# Get your project ID
+codeguide project list
 
-# Start working on a task
-codeguide task update <task_id> --status in_progress
-
-# Update task progress
-codeguide task update <task_id> "your progress notes"
+# Create a task for the AI to work on
+codeguide codespace create --project-id <your-project-id> --description "Implement user login via email and password"
 ```
 
 ## Commands
@@ -75,6 +80,18 @@ codeguide project list
 
 # Get project details
 codeguide project get <project-id>
+```
+
+### Codespace Tasks
+```bash
+# Create a new codespace task
+codeguide codespace create --project-id <id> --description "My new feature"
+
+# List codespace tasks for a project
+codeguide codespace list --project-id <id>
+
+# Get details for a specific codespace task
+codeguide codespace get <task-id>
 ```
 
 ### Task Management
@@ -109,9 +126,24 @@ codeguide api-key revoke <key-id>
 codeguide api-key check-permission
 ```
 
-### Usage & Analytics
+### External Token Management
+```bash
+# Store a new external token (e.g., for GitHub)
+codeguide token store --platform github --token <ghp_token> --name "My GitHub Token"
+
+# List all stored tokens
+codeguide token list
+
+# Revoke a stored token
+codeguide token revoke <token-id>
+```
+
+### Subscription & Usage
 
 ```bash
+# Show current subscription details
+codeguide subscription show
+
 # Check usage statistics
 codeguide usage stats
 
@@ -167,23 +199,6 @@ Create a `.codeguide.json` file in your project root:
 }
 ```
 
-## Project Structure
-
-When you initialize a project, CodeGuide creates the following structure:
-
-```
-my-project/
-├── AGENTS.md              # AI agent definitions
-├── instructions.md        # Project getting started guide
-├── tasks/                 # Task management
-│   ├── pending/          # Pending tasks
-│   ├── in_progress/      # Active tasks
-│   └── completed/        # Completed tasks
-├── project-outline.md    # Project outline
-├── README.md             # Project documentation
-└── .codeguide.json       # CodeGuide configuration
-```
-
 ## Authentication Methods
 
 CodeGuide supports multiple authentication methods with the following priority:
@@ -203,77 +218,6 @@ CodeGuide supports multiple authentication methods with the following priority:
    ```bash
    export CODEGUIDE_JWT_TOKEN="your_jwt_token"
    ```
-
-## Examples
-
-### Basic Usage
-
-```bash
-# Initialize a new project
-codeguide init my-web-app
-
-# Change to project directory
-cd my-web-app
-
-# View tasks
-codeguide task list
-
-# Start first task
-codeguide task update task_001 --status in_progress
-
-# Generate project outline
-codeguide generate outline
-```
-
-### API Key Management
-
-```bash
-# Check if you can create API keys
-codeguide api-key check-permission
-
-# Create a new key for your application
-codeguide api-key create "Production App Key"
-
-# List all your keys
-codeguide api-key list
-
-# Revoke a compromised key
-codeguide api-key revoke key_id_123
-```
-
-### Project Documentation
-
-```bash
-# Generate comprehensive project documentation
-codeguide generate docs
-
-# Create project outline
-codeguide generate outline
-
-# Generate AI agent definitions
-codeguide generate agents
-```
-
-## Advanced Usage
-
-### Using with Different Environments
-
-```bash
-# Development
-export CODEGUIDE_BASE_URL="https://dev-api.codeguide.ai"
-export CODEGUIDE_DATABASE_API_KEY="sk_dev_key"
-
-# Production
-export CODEGUIDE_BASE_URL="https://api.codeguide.ai"
-export CODEGUIDE_DATABASE_API_KEY="sk_prod_key"
-```
-
-### Custom Timeouts
-
-```bash
-# Set custom timeout (default: 1 hour)
-export CODEGUIDE_TIMEOUT="1800000"  # 30 minutes
-```
 
 ## Error Handling
 
@@ -310,9 +254,10 @@ CodeGuide provides detailed error messages for common issues:
 ## Support
 
 - **Documentation**: [Main README](../../README.md)
+- **Core Package**: [@codeguide/core](../core/README.md)
 - **Issues**: [GitHub Issues](https://github.com/CodeGuide-dev/codeguide/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/CodeGuide-dev/codeguide/discussions)
 
 ## License
 
-MIT License - see [LICENSE](../../LICENSE) file for details.
+MIT License - see the LICENSE file for details.

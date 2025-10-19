@@ -8,6 +8,7 @@ export type {
   CreateBackgroundCodespaceTaskRequest,
   CreateBackgroundCodespaceTaskResponse,
   ModelApiKey,
+  Attachment,
   GetCodespaceTaskResponse,
   CodespaceTaskData,
   TechnicalDocument,

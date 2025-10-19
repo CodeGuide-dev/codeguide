@@ -1,8 +1,22 @@
+import { Attachment } from '../codespace/codespace-types'
+
 export interface AnalyzeRepositoryRequest {
-  repository_url: string
+  github_url: string
+  github_token?: string
   generate_documents?: boolean
   create_codespace_task?: boolean
   project_id?: string
+  codespace_task_description?: string
+  codespace_branch?: string
+  codespace_base_branch?: string
+  model_api_keys?: {
+    model_name: string
+    api_key: string
+  }[]
+  model_name?: string
+  starter_kit_repo?: string
+  use_enhanced_summary?: boolean
+  attachments?: Attachment[]
 }
 
 export interface AnalyzeRepositoryResponse {

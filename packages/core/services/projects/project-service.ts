@@ -7,6 +7,7 @@ import {
   ProjectResponse,
   PaginatedProjectsRequest,
   PaginatedProjectsResponse,
+  GetProjectsRequest,
   GetProjectDocumentsRequest,
   GetProjectDocumentsResponse,
   ConnectRepositoryRequest,
@@ -14,8 +15,15 @@ import {
 } from './project-types'
 
 export class ProjectService extends BaseService {
-  async getAllProjects(): Promise<Project[]> {
-    const response = await this.get<ProjectListResponse>('/projects')
+  async getAllProjects(params?: GetProjectsRequest): Promise<Project[]> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.has_repository !== undefined) {
+      queryParams.append('has_repository', params.has_repository.toString())
+    }
+
+    const url = `/projects${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    const response = await this.get<ProjectListResponse>(url)
     return response.data
   }
 
@@ -29,6 +37,7 @@ export class ProjectService extends BaseService {
     if (params.start_date) queryParams.append('start_date', params.start_date)
     if (params.end_date) queryParams.append('end_date', params.end_date)
     if (params.sort_by_date) queryParams.append('sort_by_date', params.sort_by_date)
+    if (params.has_repository !== undefined) queryParams.append('has_repository', params.has_repository.toString())
 
     const url = `/projects/paginated${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     return this.get<PaginatedProjectsResponse>(url)

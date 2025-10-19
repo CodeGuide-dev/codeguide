@@ -10,6 +10,9 @@ import {
   CreateBackgroundCodespaceTaskResponse,
   GetCodespaceTaskResponse,
   GetProjectTasksByCodespaceResponse,
+  GetCodespaceTasksByProjectRequest,
+  GetCodespaceTasksByProjectResponse,
+  CodespaceTaskDetailedResponse,
 } from './codespace-types'
 
 export class CodespaceService extends BaseService {
@@ -17,16 +20,22 @@ export class CodespaceService extends BaseService {
     return this.post<GenerateTaskTitleResponse>('/codespace/generate-task-title', request)
   }
 
-  async createCodespaceTask(request: CreateCodespaceTaskRequest): Promise<CreateCodespaceTaskResponse> {
+  async createCodespaceTask(
+    request: CreateCodespaceTaskRequest
+  ): Promise<CreateCodespaceTaskResponse> {
     return this.post<CreateCodespaceTaskResponse>('/codespace/create-task', request)
   }
 
-  async createCodespaceTaskV2(request: CreateCodespaceTaskRequestV2): Promise<CreateCodespaceTaskResponseV2> {
+  async createCodespaceTaskV2(
+    request: CreateCodespaceTaskRequestV2
+  ): Promise<CreateCodespaceTaskResponseV2> {
     this.validateCodespaceTaskRequest(request)
     return this.post<CreateCodespaceTaskResponseV2>('/codespace/task', request)
   }
 
-  async createBackgroundCodespaceTask(request: CreateBackgroundCodespaceTaskRequest): Promise<CreateBackgroundCodespaceTaskResponse> {
+  async createBackgroundCodespaceTask(
+    request: CreateBackgroundCodespaceTaskRequest
+  ): Promise<CreateBackgroundCodespaceTaskResponse> {
     this.validateCodespaceTaskRequest(request)
     return this.post<CreateBackgroundCodespaceTaskResponse>('/codespace/task/background', request)
   }
@@ -38,11 +47,41 @@ export class CodespaceService extends BaseService {
     return this.get<GetCodespaceTaskResponse>(`/codespace/task/${codespaceTaskId}`)
   }
 
-  async getProjectTasksByCodespace(codespaceTaskId: string): Promise<GetProjectTasksByCodespaceResponse> {
+  async getProjectTasksByCodespace(
+    codespaceTaskId: string
+  ): Promise<GetProjectTasksByCodespaceResponse> {
     if (!codespaceTaskId) {
       throw new Error('codespace_task_id is required')
     }
-    return this.get<GetProjectTasksByCodespaceResponse>(`/project-tasks/by-codespace/${codespaceTaskId}`)
+    return this.get<GetProjectTasksByCodespaceResponse>(
+      `/project-tasks/by-codespace/${codespaceTaskId}`
+    )
+  }
+
+  async getCodespaceTasksByProject(
+    params: GetCodespaceTasksByProjectRequest
+  ): Promise<GetCodespaceTasksByProjectResponse> {
+    if (!params.project_id) {
+      throw new Error('project_id is required')
+    }
+
+    const queryParams = new URLSearchParams()
+
+    if (params.status) queryParams.append('status', params.status)
+    if (params.limit !== undefined) queryParams.append('limit', params.limit.toString())
+    if (params.offset !== undefined) queryParams.append('offset', params.offset.toString())
+    if (params.sort_by) queryParams.append('sort_by', params.sort_by)
+    if (params.sort_order) queryParams.append('sort_order', params.sort_order)
+
+    const url = `/codespace/tasks/project/${params.project_id}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    return this.get<GetCodespaceTasksByProjectResponse>(url)
+  }
+
+  async getCodespaceTaskDetailed(codespaceTaskId: string): Promise<CodespaceTaskDetailedResponse> {
+    if (!codespaceTaskId) {
+      throw new Error('codespace_task_id is required')
+    }
+    return this.get<CodespaceTaskDetailedResponse>(`/codespace/task/${codespaceTaskId}/detailed`)
   }
 
   private validateCodespaceTaskRequest(request: CreateCodespaceTaskRequestV2): void {
@@ -54,7 +93,10 @@ export class CodespaceService extends BaseService {
       throw new Error('task_description is required')
     }
 
-    if (request.execution_mode && !['implementation', 'docs-only'].includes(request.execution_mode)) {
+    if (
+      request.execution_mode &&
+      !['implementation', 'docs-only'].includes(request.execution_mode)
+    ) {
       throw new Error('execution_mode must be either "implementation" or "docs-only"')
     }
 

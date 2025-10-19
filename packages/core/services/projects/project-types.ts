@@ -1,3 +1,15 @@
+export interface ProjectRepository {
+  id: string
+  project_id: string
+  repo_url: string
+  branch: string
+  author: string
+  name: string
+  connection_status: 'pending' | 'connected' | 'failed'
+  created_at: string
+  updated_at: string
+}
+
 export interface Project {
   id: string
   title: string
@@ -6,6 +18,7 @@ export interface Project {
   created_at: string
   updated_at: string
   project_documents: ProjectDocument[]
+  project_repositories: ProjectRepository[]
   category?: Category
   codie_tool?: CodieTool
   github_url?: string
@@ -86,6 +99,10 @@ export interface ProjectResponse {
   data: Project
 }
 
+export interface GetProjectsRequest {
+  has_repository?: boolean
+}
+
 export interface PaginatedProjectsRequest {
   page?: number
   page_size?: number
@@ -94,6 +111,7 @@ export interface PaginatedProjectsRequest {
   start_date?: string
   end_date?: string
   sort_by_date?: 'asc' | 'desc'
+  has_repository?: boolean
 }
 
 export interface PaginatedProjectsResponse {

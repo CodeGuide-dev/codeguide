@@ -25,6 +25,14 @@ export interface ModelApiKey {
   api_key: string
 }
 
+export interface Attachment {
+  filename: string
+  file_data: string // bytes (base64)
+  mime_type: string
+  file_size: number
+  description?: string
+}
+
 export interface CreateCodespaceTaskRequestV2 {
   project_id: string
   project_repository_id?: string
@@ -40,6 +48,8 @@ export interface CreateCodespaceTaskRequestV2 {
   execution_mode?: 'implementation' | 'docs-only'
   model_name?: string
   starter_kit_repo?: string
+  use_enhanced_summary?: boolean
+  attachments?: Attachment[]
 }
 
 export interface CreateCodespaceTaskResponseV2 {
@@ -125,3 +135,33 @@ export interface GetProjectTasksByCodespaceResponse {
 export interface CreateBackgroundCodespaceTaskRequest extends CreateCodespaceTaskRequestV2 {}
 
 export interface CreateBackgroundCodespaceTaskResponse extends CreateCodespaceTaskResponseV2 {}
+
+// Request parameters for getting codespace tasks by project
+export interface GetCodespaceTasksByProjectRequest {
+  project_id: string
+  status?: 'completed' | 'failed' | 'in_progress' | 'created' | 'cancelled'
+  limit?: number
+  offset?: number
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
+}
+
+// Response for getting codespace tasks by project
+export interface GetCodespaceTasksByProjectResponse {
+  status: string
+  data: CodespaceTaskData[]
+  total_count: number
+  message: string
+}
+
+// Response for getting detailed codespace task with relations
+export interface CodespaceTaskDetailedResponse {
+  status: string
+  data: {
+    task: CodespaceTaskData
+    project: any // Project data structure
+    repository: any // Repository data structure
+    usage_summary: any // Usage statistics
+  }
+  message: string
+}

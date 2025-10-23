@@ -12,5 +12,7 @@ export type {
   GetCodespaceTaskResponse,
   CodespaceTaskData,
   TechnicalDocument,
-  GetProjectTasksByCodespaceResponse
+  GetProjectTasksByCodespaceResponse,
+  CodespaceQuestionnaireRequest,
+  CodespaceQuestionnaireResponse
 } from './codespace-types'

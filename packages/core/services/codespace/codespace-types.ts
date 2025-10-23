@@ -50,6 +50,7 @@ export interface CreateCodespaceTaskRequestV2 {
   starter_kit_repo?: string
   use_enhanced_summary?: boolean
   attachments?: Attachment[]
+  ai_questionnaire?: Record<string, string>
 }
 
 export interface CreateCodespaceTaskResponseV2 {
@@ -163,5 +164,21 @@ export interface CodespaceTaskDetailedResponse {
     repository: any // Repository data structure
     usage_summary: any // Usage statistics
   }
+  message: string
+}
+
+export interface CodespaceQuestionnaireRequest {
+  task_description: string
+  project_context?: string
+  repository_info?: {
+    name?: string
+    description?: string
+  }
+  attachments?: Attachment[]
+}
+
+export interface CodespaceQuestionnaireResponse {
+  success: boolean
+  questions: string[]
   message: string
 }

@@ -13,11 +13,18 @@ import {
   GetCodespaceTasksByProjectRequest,
   GetCodespaceTasksByProjectResponse,
   CodespaceTaskDetailedResponse,
+  CodespaceQuestionnaireRequest,
+  CodespaceQuestionnaireResponse,
 } from './codespace-types'
 
 export class CodespaceService extends BaseService {
   async generateTaskTitle(request: GenerateTaskTitleRequest): Promise<GenerateTaskTitleResponse> {
     return this.post<GenerateTaskTitleResponse>('/codespace/generate-task-title', request)
+  }
+
+  async generateQuestionnaire(request: CodespaceQuestionnaireRequest): Promise<CodespaceQuestionnaireResponse> {
+    this.validateQuestionnaireRequest(request)
+    return this.post<CodespaceQuestionnaireResponse>('/codespace/generate-questionnaire', request)
   }
 
   async createCodespaceTask(
@@ -119,6 +126,57 @@ export class CodespaceService extends BaseService {
     // Validate base_branch default
     if (request.base_branch === undefined) {
       request.base_branch = 'main'
+    }
+
+    // Validate ai_questionnaire if provided
+    if (request.ai_questionnaire) {
+      if (typeof request.ai_questionnaire !== 'object' || request.ai_questionnaire === null) {
+        throw new Error('ai_questionnaire must be an object')
+      }
+      
+      // Check if it's a plain object with string keys and string values
+      for (const [key, value] of Object.entries(request.ai_questionnaire)) {
+        if (typeof key !== 'string') {
+          throw new Error('All ai_questionnaire keys must be strings')
+        }
+        if (typeof value !== 'string') {
+          throw new Error('All ai_questionnaire values must be strings')
+        }
+      }
+    }
+  }
+
+  private validateQuestionnaireRequest(request: CodespaceQuestionnaireRequest): void {
+    if (!request.task_description) {
+      throw new Error('task_description is required')
+    }
+
+    // Validate attachments if provided
+    if (request.attachments) {
+      if (!Array.isArray(request.attachments)) {
+        throw new Error('attachments must be an array')
+      }
+
+      for (const attachment of request.attachments) {
+        // Check required fields
+        if (!attachment.filename || typeof attachment.filename !== 'string') {
+          throw new Error('Each attachment must have a valid filename string')
+        }
+        if (!attachment.file_data || typeof attachment.file_data !== 'string') {
+          throw new Error('Each attachment must have valid file_data string')
+        }
+        if (!attachment.mime_type || typeof attachment.mime_type !== 'string') {
+          throw new Error('Each attachment must have a valid mime_type string')
+        }
+        if (typeof attachment.file_size !== 'number' || attachment.file_size < 0) {
+          throw new Error('Each attachment must have a valid file_size number (>= 0)')
+        }
+
+        // Validate optional description field
+        if (attachment.description && typeof attachment.description !== 'string') {
+          throw new Error('Attachment description must be a string if provided')
+        }
+      }
     }
   }
 }

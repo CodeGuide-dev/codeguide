@@ -15,6 +15,13 @@ import {
   CodespaceTaskDetailedResponse,
   CodespaceQuestionnaireRequest,
   CodespaceQuestionnaireResponse,
+  // Codespace Models Types
+  GetCodespaceModelsQuery,
+  GetCodespaceModelsResponse,
+  GetCodespaceModelResponse,
+  GetLLMModelProvidersResponse,
+  GetLLMModelProviderResponse,
+  GetModelsByProviderResponse,
 } from './codespace-types'
 
 export class CodespaceService extends BaseService {
@@ -89,6 +96,103 @@ export class CodespaceService extends BaseService {
       throw new Error('codespace_task_id is required')
     }
     return this.get<CodespaceTaskDetailedResponse>(`/codespace/task/${codespaceTaskId}/detailed`)
+  }
+
+  // ============================================================================
+  // Codespace Models Methods
+  // ============================================================================
+
+  /**
+   * Get all codespace models with optional filtering
+   *
+   * GET /api/codespace-models/models
+   *
+   * @param query - Optional query parameters for filtering
+   * @returns Promise resolving to array of codespace models with provider info
+   */
+  async getCodespaceModels(query?: GetCodespaceModelsQuery): Promise<GetCodespaceModelsResponse> {
+    const params = this.buildQueryParams(query)
+    const url = params
+      ? `/api/codespace-models/models?${params}`
+      : '/api/codespace-models/models'
+
+    return this.get<GetCodespaceModelsResponse>(url)
+  }
+
+  /**
+   * Get a specific codespace model by ID
+   *
+   * GET /api/codespace-models/models/{model_id}
+   *
+   * @param modelId - The UUID of the model
+   * @returns Promise resolving to the codespace model with provider info
+   */
+  async getCodespaceModel(modelId: string): Promise<GetCodespaceModelResponse> {
+    if (!modelId) {
+      throw new Error('model_id is required')
+    }
+    return this.get<GetCodespaceModelResponse>(`/api/codespace-models/models/${modelId}`)
+  }
+
+  /**
+   * Get all LLM model providers
+   *
+   * GET /api/codespace-models/providers
+   *
+   * @returns Promise resolving to array of LLM model providers
+   */
+  async getLLMModelProviders(): Promise<GetLLMModelProvidersResponse> {
+    return this.get<GetLLMModelProvidersResponse>('/api/codespace-models/providers')
+  }
+
+  /**
+   * Get a specific LLM model provider by ID
+   *
+   * GET /api/codespace-models/providers/{provider_id}
+   *
+   * @param providerId - The UUID of the provider
+   * @returns Promise resolving to the LLM model provider
+   */
+  async getLLMModelProvider(providerId: string): Promise<GetLLMModelProviderResponse> {
+    if (!providerId) {
+      throw new Error('provider_id is required')
+    }
+    return this.get<GetLLMModelProviderResponse>(`/api/codespace-models/providers/${providerId}`)
+  }
+
+  /**
+   * Get models by provider
+   *
+   * GET /api/codespace-models/providers/{provider_id}/models
+   *
+   * @param providerId - The UUID of the provider
+   * @returns Promise resolving to array of models from the specified provider
+   */
+  async getModelsByProvider(providerId: string): Promise<GetModelsByProviderResponse> {
+    if (!providerId) {
+      throw new Error('provider_id is required')
+    }
+    return this.get<GetModelsByProviderResponse>(`/api/codespace-models/providers/${providerId}/models`)
+  }
+
+  /**
+   * Build URL query parameters from an object
+   *
+   * @param params - The parameters object
+   * @returns URL query string
+   */
+  private buildQueryParams(params?: Record<string, any>): string {
+    if (!params) return ''
+
+    const searchParams = new URLSearchParams()
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, value.toString())
+      }
+    })
+
+    return searchParams.toString()
   }
 
   private validateCodespaceTaskRequest(request: CreateCodespaceTaskRequestV2): void {

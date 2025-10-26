@@ -182,3 +182,67 @@ export interface CodespaceQuestionnaireResponse {
   questions: string[]
   message: string
 }
+
+// ============================================================================
+// Codespace Models Types
+// ============================================================================
+
+export interface LLMModelProviderInDB {
+  id: string
+  created_at: string
+  name?: string
+  key?: string
+  logo_src?: string
+}
+
+export interface CodespaceModelInDB {
+  id: string
+  created_at: string
+  key?: string
+  name?: string
+  provider_id?: string
+  base_url?: string
+  completion_base_url?: string
+  execution_mode?: 'opencode' | 'claude-code' | 'docs-only' | 'implementation'
+  logo_src?: string
+}
+
+export interface CodespaceModelWithProvider extends CodespaceModelInDB {
+  provider?: LLMModelProviderInDB
+}
+
+export interface GetCodespaceModelsQuery {
+  provider_id?: string
+  execution_mode?: string
+}
+
+export interface GetCodespaceModelsResponse extends Array<CodespaceModelWithProvider> {}
+
+export interface GetCodespaceModelResponse extends CodespaceModelWithProvider {}
+
+export interface GetLLMModelProvidersResponse extends Array<LLMModelProviderInDB> {}
+
+export interface GetLLMModelProviderResponse extends LLMModelProviderInDB {}
+
+export interface GetModelsByProviderResponse extends Array<CodespaceModelInDB> {}
+
+// ============================================================================
+// Codespace Models Error Types
+// ============================================================================
+
+export interface CodespaceModelNotFoundError {
+  detail: string // "Codespace model with ID {model_id} not found"
+}
+
+export interface AuthenticationRequiredError {
+  detail: string // "Authentication required"
+}
+
+export interface CodespaceModelsFetchError {
+  detail: string // "Failed to fetch codespace models"
+}
+
+export type CodespaceModelsError =
+  | CodespaceModelNotFoundError
+  | AuthenticationRequiredError
+  | CodespaceModelsFetchError

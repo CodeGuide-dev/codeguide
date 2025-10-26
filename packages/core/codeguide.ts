@@ -17,6 +17,7 @@ import {
   CancellationFunnelService,
   CodespaceService,
   ExternalTokenService,
+  SecurityKeysService,
 } from './services'
 import { APIServiceConfig, CodeGuideOptions } from './types'
 
@@ -31,6 +32,7 @@ export class CodeGuide {
   public cancellationFunnel: CancellationFunnelService
   public codespace: CodespaceService
   public externalTokens: ExternalTokenService
+  public securityKeys: SecurityKeysService
   private options: CodeGuideOptions
 
   constructor(config: APIServiceConfig, options: CodeGuideOptions = {}) {
@@ -47,6 +49,7 @@ export class CodeGuide {
     this.cancellationFunnel = new CancellationFunnelService(config)
     this.codespace = new CodespaceService(config)
     this.externalTokens = new ExternalTokenService(config)
+    this.securityKeys = new SecurityKeysService(config)
   }
 
   // Convenience method for backward compatibility
@@ -90,7 +93,6 @@ export class CodeGuide {
     return this.tasks.createTaskGroupWithCodespace(request, this.codespace)
   }
 
-  
   setOptions(options: Partial<CodeGuideOptions>): void {
     this.options = { ...this.options, ...options }
   }

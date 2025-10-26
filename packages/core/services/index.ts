@@ -18,6 +18,7 @@ export { SubscriptionService } from './subscriptions'
 export { CancellationFunnelService } from './cancellation-funnel'
 export { CodespaceService } from './codespace'
 export { ExternalTokenService } from './external-tokens'
+export { SecurityKeysService } from './security-keys'
 
 // Re-export all types for convenience
 export * from './generation'
@@ -30,3 +31,4 @@ export * from './subscriptions'
 export * from './cancellation-funnel'
 export * from './codespace'
 export * from './external-tokens'
+export * from './security-keys'

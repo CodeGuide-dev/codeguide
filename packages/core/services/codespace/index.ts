@@ -14,5 +14,16 @@ export type {
   TechnicalDocument,
   GetProjectTasksByCodespaceResponse,
   CodespaceQuestionnaireRequest,
-  CodespaceQuestionnaireResponse
+  CodespaceQuestionnaireResponse,
+  // Codespace Models Types
+  LLMModelProviderInDB,
+  CodespaceModelInDB,
+  CodespaceModelWithProvider,
+  GetCodespaceModelsQuery,
+  GetCodespaceModelsResponse,
+  GetCodespaceModelResponse,
+  GetLLMModelProvidersResponse,
+  GetLLMModelProviderResponse,
+  GetModelsByProviderResponse,
+  CodespaceModelsError
 } from './codespace-types'

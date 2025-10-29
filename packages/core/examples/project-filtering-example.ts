@@ -52,8 +52,8 @@ async function demonstrateProjectFiltering() {
     }
 
     const paginatedResponse = await codeGuide.projects.getPaginatedProjects(paginatedRequest)
-    console.log(`Page ${paginatedResponse.pagination.page} of ${paginatedResponse.pagination.total_pages}`)
-    console.log(`Total projects with repositories: ${paginatedResponse.pagination.total}`)
+    console.log(`Page ${paginatedResponse.page} of ${paginatedResponse.total_pages}`)
+    console.log(`Total projects with repositories: ${paginatedResponse.count}`)
     console.log(`Showing ${paginatedResponse.data.length} projects:`)
 
     paginatedResponse.data.forEach((project: Project) => {
@@ -80,7 +80,7 @@ async function demonstrateProjectFiltering() {
     }
 
     const filteredProjects = await codeGuide.projects.getPaginatedProjects(combinedFilters)
-    console.log(`Found ${filteredProjects.pagination.total} projects matching filters:`)
+    console.log(`Found ${filteredProjects.count} projects matching filters:`)
     filteredProjects.data.forEach((project: Project) => {
       console.log(`- ${project.title} (Updated: ${project.updated_at})`)
     })

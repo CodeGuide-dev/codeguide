@@ -12,6 +12,7 @@ export interface GenerateTaskTitleResponse {
 export interface CreateCodespaceTaskRequest {
   title: string
   description: string
+  conversation_id?: string
 }
 
 export interface CreateCodespaceTaskResponse {
@@ -51,6 +52,7 @@ export interface CreateCodespaceTaskRequestV2 {
   use_enhanced_summary?: boolean
   attachments?: Attachment[]
   ai_questionnaire?: Record<string, string>
+  conversation_id?: string
 }
 
 export interface CreateCodespaceTaskResponseV2 {

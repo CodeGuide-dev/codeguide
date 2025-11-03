@@ -4,6 +4,7 @@ import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import {
   TrackUsageRequest,
+  TrackUsageResponse,
   CreditBalanceResponse,
   CreditCheckResponse,
   UsageSummaryResponse,
@@ -214,17 +215,80 @@ describe('UsageService', () => {
   describe('getAuthorization', () => {
     it('should get authorization info successfully', async () => {
       const response: AuthorizationResponse = {
-        user_id: 'user123',
-        subscription: {
-          plan: 'pro',
-          status: 'active',
-          features: ['api-access', 'priority-queue'],
+        success: true,
+        data: {
+          user_id: 'user_32CKVjVlcRfh4HAqpVckgILey0Z',
+          subscription: null,
+          credit_balance: {
+            total_allotted: 500,
+            total_consumed: 0,
+            remaining_credits: 500,
+            is_over_limit: false,
+            utilization_percentage: 0.0,
+            billing_cycle_start: '2025-11-03',
+            billing_cycle_end: '2025-11-10',
+          },
+          has_active_subscription: false,
+          has_previous_subscriptions: false,
+          is_within_credit_limit: true,
+          authorization_level: 'free',
+          restrictions: [],
+          can_create_tasks: true,
+          can_analyze_repos: true,
+          can_access_previous_projects: false,
+          plan_limits: {
+            plan_type: 'free',
+            limits: {
+              codespace_tasks: {
+                allowed: true,
+                current_usage: 0,
+                limit: 2,
+                remaining: 2,
+                period_type: 'lifetime',
+                period_start: null,
+                period_end: null,
+                message: 'Can create 2 more codespace tasks. 2 codespace tasks (lifetime limit)',
+                is_unlimited: false,
+              },
+              api_calls: {
+                limit: 500,
+                period: '7_days',
+                description: '500 API credits (valid for 7 days)',
+                is_unlimited: false,
+              },
+              storage_gb: {
+                limit: 1,
+                period: 'lifetime',
+                description: '1 GB storage',
+                is_unlimited: false,
+              },
+              projects: {
+                limit: 3,
+                period: 'lifetime',
+                description: '3 projects maximum',
+                is_unlimited: false,
+              },
+              collaborators: {
+                limit: 0,
+                period: 'lifetime',
+                description: 'No team collaboration',
+                is_unlimited: false,
+              },
+            },
+          },
+          codespace_task_limit: {
+            allowed: true,
+            current_usage: 0,
+            limit: 2,
+            remaining: 2,
+            period_type: 'lifetime',
+            period_start: null,
+            period_end: null,
+            message: 'Can create 2 more codespace tasks. 2 codespace tasks (lifetime limit)',
+            is_unlimited: false,
+          },
         },
-        usage_limits: {
-          monthly_credits: 100,
-          max_calls_per_day: 1000,
-        },
-        permissions: ['read', 'write', 'delete'],
+        message: 'Authorization status retrieved successfully',
       }
 
       mockAxios.onGet('/v1/usage/authorization').reply(200, response)
@@ -232,6 +296,95 @@ describe('UsageService', () => {
       const result = await usageService.getAuthorization()
 
       expect(result).toEqual(response)
+    })
+
+    it('should get authorization info for subscribed user successfully', async () => {
+      const response: AuthorizationResponse = {
+        success: true,
+        data: {
+          user_id: 'user_2qaB6nlVH3R9QXhQZpt1nmVDymN',
+          subscription: {
+            id: 'sub_1RbggdFb0vIg7N8EFOPTEhDh',
+            status: 'active',
+            interval: 'month',
+            current_period_start: '2025-10-19T11:31:19+00:00',
+            current_period_end: '2025-11-19T11:31:19+00:00',
+            price_id: 'price_1QYtmGFb0vIg7N8E71nw8g27',
+            product_name: null,
+            plan_name: 'Monthly Plan',
+          },
+          credit_balance: {
+            total_allotted: 5000,
+            total_consumed: 658,
+            remaining_credits: 4342,
+            is_over_limit: false,
+            utilization_percentage: 13.16,
+            billing_cycle_start: '2025-10-19',
+            billing_cycle_end: '2025-11-19',
+          },
+          has_active_subscription: true,
+          has_previous_subscriptions: true,
+          is_within_credit_limit: true,
+          authorization_level: 'basic',
+          restrictions: [],
+          can_create_tasks: true,
+          can_analyze_repos: true,
+          can_access_previous_projects: true,
+          plan_limits: {
+            plan_type: 'basic',
+            limits: {
+              codespace_tasks: {
+                allowed: true,
+                current_usage: 0,
+                limit: -1,
+                remaining: -1,
+                period_type: 'monthly',
+                period_start: null,
+                period_end: null,
+                message: 'Unlimited codespace tasks',
+                is_unlimited: true,
+              },
+              api_calls: {
+                limit: 5000,
+                period: 'monthly',
+                description: '5000 API credits per month',
+                is_unlimited: false,
+              },
+              storage_gb: {
+                limit: 10,
+                period: 'lifetime',
+                description: '10 GB storage',
+                is_unlimited: false,
+              },
+              projects: {
+                limit: 20,
+                period: 'lifetime',
+                description: '20 projects maximum',
+                is_unlimited: false,
+              },
+              collaborators: {
+                limit: 3,
+                period: 'monthly',
+                description: '3 team collaborators',
+                is_unlimited: false,
+              },
+            },
+          },
+          codespace_task_limit: null,
+        },
+        message: 'Authorization status retrieved successfully',
+      }
+
+      mockAxios.onGet('/v1/usage/authorization').reply(200, response)
+
+      const result = await usageService.getAuthorization()
+
+      expect(result).toEqual(response)
+      expect(result.data.has_active_subscription).toBe(true)
+      expect(result.data.subscription).not.toBeNull()
+      expect(result.data.subscription?.plan_name).toBe('Monthly Plan')
+      expect(result.data.codespace_task_limit).toBeNull()
+      expect(result.data.plan_limits.limits.codespace_tasks.is_unlimited).toBe(true)
     })
   })
 

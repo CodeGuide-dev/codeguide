@@ -29,7 +29,9 @@ export class CodespaceService extends BaseService {
     return this.post<GenerateTaskTitleResponse>('/codespace/generate-task-title', request)
   }
 
-  async generateQuestionnaire(request: CodespaceQuestionnaireRequest): Promise<CodespaceQuestionnaireResponse> {
+  async generateQuestionnaire(
+    request: CodespaceQuestionnaireRequest
+  ): Promise<CodespaceQuestionnaireResponse> {
     this.validateQuestionnaireRequest(request)
     return this.post<CodespaceQuestionnaireResponse>('/codespace/generate-questionnaire', request)
   }
@@ -112,9 +114,7 @@ export class CodespaceService extends BaseService {
    */
   async getCodespaceModels(query?: GetCodespaceModelsQuery): Promise<GetCodespaceModelsResponse> {
     const params = this.buildQueryParams(query)
-    const url = params
-      ? `/api/codespace-models/models?${params}`
-      : '/api/codespace-models/models'
+    const url = params ? `/api/codespace-models/models?${params}` : '/api/codespace-models/models'
 
     return this.get<GetCodespaceModelsResponse>(url)
   }
@@ -172,7 +172,9 @@ export class CodespaceService extends BaseService {
     if (!providerId) {
       throw new Error('provider_id is required')
     }
-    return this.get<GetModelsByProviderResponse>(`/api/codespace-models/providers/${providerId}/models`)
+    return this.get<GetModelsByProviderResponse>(
+      `/api/codespace-models/providers/${providerId}/models`
+    )
   }
 
   /**
@@ -206,9 +208,9 @@ export class CodespaceService extends BaseService {
 
     if (
       request.execution_mode &&
-      !['implementation', 'docs-only'].includes(request.execution_mode)
+      !['implementation', 'docs-only', 'direct'].includes(request.execution_mode)
     ) {
-      throw new Error('execution_mode must be either "implementation" or "docs-only"')
+      throw new Error('execution_mode must be either "implementation", "docs-only", or "direct"')
     }
 
     // Validate model_api_keys if provided
@@ -237,7 +239,7 @@ export class CodespaceService extends BaseService {
       if (typeof request.ai_questionnaire !== 'object' || request.ai_questionnaire === null) {
         throw new Error('ai_questionnaire must be an object')
       }
-      
+
       // Check if it's a plain object with string keys and string values
       for (const [key, value] of Object.entries(request.ai_questionnaire)) {
         if (typeof key !== 'string') {

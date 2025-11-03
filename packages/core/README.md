@@ -46,7 +46,7 @@ import { CodeGuide } from '@codeguide/core'
 
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
-  databaseApiKey: 'sk_your_database_api_key'
+  databaseApiKey: 'sk_your_database_api_key',
 })
 
 // Get all API keys
@@ -55,7 +55,7 @@ console.log(`Found ${keysResponse.data.length} API keys`)
 
 // Create a new API key
 const newKey = await codeguide.apiKeyEnhanced.createApiKey({
-  name: 'My Application'
+  name: 'My Application',
 })
 console.log(`Created key: ${newKey.data.api_key}`)
 ```
@@ -67,20 +67,20 @@ import { CodeGuide } from '@codeguide/core'
 
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
-  databaseApiKey: 'sk_your_database_api_key'
+  databaseApiKey: 'sk_your_database_api_key',
 })
 
 // Create a new codespace task for implementation
 const codespaceTask = await codeguide.codespace.createCodespaceTaskV2({
-  project_id: "your_project_id",
-  task_description: "Implement a new feature for real-time notifications",
-  execution_mode: "implementation"
-});
-console.log(`Created codespace task: ${codespaceTask.task_id}`);
+  project_id: 'your_project_id',
+  task_description: 'Implement a new feature for real-time notifications',
+  execution_mode: 'implementation',
+})
+console.log(`Created codespace task: ${codespaceTask.task_id}`)
 
 // Get task details
-const taskDetails = await codeguide.codespace.getCodespaceTask(codespaceTask.task_id);
-console.log(`Task status: ${taskDetails.data.status}`);
+const taskDetails = await codeguide.codespace.getCodespaceTask(codespaceTask.task_id)
+console.log(`Task status: ${taskDetails.data.status}`)
 ```
 
 ### Subscription Management
@@ -90,16 +90,18 @@ import { CodeGuide } from '@codeguide/core'
 
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
-  databaseApiKey: 'sk_your_database_api_key'
+  databaseApiKey: 'sk_your_database_api_key',
 })
 
 // Get current subscription
-const subscription = await codeguide.subscription.getCurrentSubscription();
-console.log(`Current plan: ${subscription.data.product.name} (${subscription.data.subscription.status})`);
+const subscription = await codeguide.subscription.getCurrentSubscription()
+console.log(
+  `Current plan: ${subscription.data.product.name} (${subscription.data.subscription.status})`
+)
 
 // Get all subscriptions (including historical)
-const allSubscriptions = await codeguide.subscription.getAllSubscriptions();
-console.log(`Found ${allSubscriptions.data.length} total subscriptions.`);
+const allSubscriptions = await codeguide.subscription.getAllSubscriptions()
+console.log(`Found ${allSubscriptions.data.length} total subscriptions.`)
 ```
 
 ### External Token Management
@@ -109,7 +111,7 @@ import { CodeGuide } from '@codeguide/core'
 
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
-  databaseApiKey: 'sk_your_database_api_key'
+  databaseApiKey: 'sk_your_database_api_key',
 })
 
 // Store a GitHub token
@@ -117,13 +119,13 @@ const storedToken = await codeguide.externalTokens.storeExternalToken({
   platform: 'github',
   token: 'ghp_your_github_token',
   token_name: 'My Personal GitHub Token',
-  token_type: 'personal_access_token'
-});
-console.log(`Stored token with ID: ${storedToken.id}`);
+  token_type: 'personal_access_token',
+})
+console.log(`Stored token with ID: ${storedToken.id}`)
 
 // List all stored GitHub tokens
-const githubTokens = await codeguide.externalTokens.listTokens({ platform: 'github' });
-console.log(`Found ${githubTokens.tokens.length} GitHub tokens.`);
+const githubTokens = await codeguide.externalTokens.listTokens({ platform: 'github' })
+console.log(`Found ${githubTokens.tokens.length} GitHub tokens.`)
 ```
 
 ## Authentication
@@ -137,7 +139,7 @@ Recommended method. The key must be prefixed with `sk_`.
 ```typescript
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
-  databaseApiKey: 'sk_your_database_api_key'
+  databaseApiKey: 'sk_your_database_api_key',
 })
 ```
 
@@ -149,7 +151,7 @@ For backward compatibility.
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
   apiKey: 'your_api_key',
-  userId: 'your_user_id'
+  userId: 'your_user_id',
 })
 ```
 
@@ -160,7 +162,7 @@ For applications using Clerk for authentication.
 ```typescript
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
-  jwtToken: 'your_jwt_token'
+  jwtToken: 'your_jwt_token',
 })
 ```
 
@@ -171,10 +173,10 @@ The client automatically falls back through authentication methods based on the 
 ```typescript
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
-  databaseApiKey: 'sk_key',        // Will try this first
-  apiKey: 'legacy_key',             // Fallback if database key is invalid or missing
-  userId: 'user_id',                // Required for legacy auth
-  jwtToken: 'jwt_token'             // Final fallback
+  databaseApiKey: 'sk_key', // Will try this first
+  apiKey: 'legacy_key', // Fallback if database key is invalid or missing
+  userId: 'user_id', // Required for legacy auth
+  jwtToken: 'jwt_token', // Final fallback
 })
 ```
 
@@ -252,9 +254,11 @@ const codeguide = new CodeGuide({
 - `getCreditBalance(): Promise<CreditBalanceResponse>`
 - `getUsageSummary(params?: UsageSummaryRequest): Promise<UsageSummaryResponse>`
 - `checkCredits(params: CreditCheckRequest): Promise<CreditCheckResponse>`
+- `getAuthorization(): Promise<AuthorizationResponse>`
 - `healthCheck(): Promise<boolean>`
 
 ### CancellationFunnelService
+
 - `initiateCancellation(request: CancellationFunnelInitiateRequest): Promise<CancellationFunnelInitiateResponse>`
 - `logSurveyResponse(request: CancellationFunnelSurveyRequest): Promise<CancellationFunnelSurveyResponse>`
 - `getCancellationFunnelStatus(subscriptionId: string): Promise<any>`
@@ -264,14 +268,15 @@ const codeguide = new CodeGuide({
 The package exports all necessary types for requests and responses.
 
 ### Core Types
+
 ```typescript
 interface APIServiceConfig {
   baseUrl: string
-  databaseApiKey?: string    // Highest priority (sk_...)
-  apiKey?: string           // Legacy API key
-  userId?: string           // Required for legacy auth
-  jwtToken?: string         // Clerk JWT token
-  timeout?: number          // Default: 3600000 (1 hour)
+  databaseApiKey?: string // Highest priority (sk_...)
+  apiKey?: string // Legacy API key
+  userId?: string // Required for legacy auth
+  jwtToken?: string // Clerk JWT token
+  timeout?: number // Default: 3600000 (1 hour)
 }
 
 interface CodeGuideOptions {
@@ -282,6 +287,7 @@ interface CodeGuideOptions {
 ```
 
 ### Key Service Types
+
 ```typescript
 // projects/project-types.ts
 interface Project {
@@ -296,7 +302,7 @@ interface Project {
 interface CreateCodespaceTaskRequestV2 {
   project_id: string
   task_description: string
-  execution_mode?: 'implementation' | 'docs-only'
+  execution_mode?: 'implementation' | 'docs-only' | 'direct'
   // ... and more
 }
 
@@ -350,7 +356,7 @@ You can configure the request timeout (in milliseconds). The default is 1 hour.
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.ai',
   databaseApiKey: 'sk_your_key',
-  timeout: 1800000 // 30 minutes
+  timeout: 1800000, // 30 minutes
 })
 ```
 
@@ -359,12 +365,15 @@ const codeguide = new CodeGuide({
 Enable verbose logging to see detailed request and response information in the console.
 
 ```typescript
-const codeguide = new CodeGuide({
-  baseUrl: 'https://api.codeguide.ai',
-  databaseApiKey: 'sk_your_key'
-}, {
-  verbose: true // Enable detailed logging
-})
+const codeguide = new CodeGuide(
+  {
+    baseUrl: 'https://api.codeguide.ai',
+    databaseApiKey: 'sk_your_key',
+  },
+  {
+    verbose: true, // Enable detailed logging
+  }
+)
 ```
 
 ## Contributing

@@ -31,7 +31,7 @@ const codeguide = new CodeGuide({
   // Alternative authentication methods:
   // apiKey: 'your_legacy_api_key',
   // jwtToken: 'your_clerk_jwt_token',
-  timeout: 30000
+  timeout: 30000,
 })
 
 // Access the codespace service
@@ -62,15 +62,15 @@ The service will automatically use the highest priority authentication method av
 
 The Codespace Service provides the following methods:
 
-| Method | Description | Endpoint |
-|--------|-------------|----------|
-| `generateTaskTitle()` | Generate a title from task description | `POST /codespace/generate-task-title` |
-| `createCodespaceTaskV2()` | Create a new codespace task | `POST /codespace/task` |
-| `createBackgroundCodespaceTask()` | Create task in background | `POST /codespace/task/background` |
-| `getCodespaceTask()` | Get task by ID | `GET /codespace/task/{id}` |
-| `getCodespaceTasksByProject()` | Get tasks for a project | `GET /codespace/tasks/project/{id}` |
-| `getCodespaceTaskDetailed()` | Get detailed task info | `GET /codespace/task/{id}/detailed` |
-| `getProjectTasksByCodespace()` | Get project tasks by codespace | `GET /project-tasks/by-codespace/{id}` |
+| Method                            | Description                            | Endpoint                               |
+| --------------------------------- | -------------------------------------- | -------------------------------------- |
+| `generateTaskTitle()`             | Generate a title from task description | `POST /codespace/generate-task-title`  |
+| `createCodespaceTaskV2()`         | Create a new codespace task            | `POST /codespace/task`                 |
+| `createBackgroundCodespaceTask()` | Create task in background              | `POST /codespace/task/background`      |
+| `getCodespaceTask()`              | Get task by ID                         | `GET /codespace/task/{id}`             |
+| `getCodespaceTasksByProject()`    | Get tasks for a project                | `GET /codespace/tasks/project/{id}`    |
+| `getCodespaceTaskDetailed()`      | Get detailed task info                 | `GET /codespace/task/{id}/detailed`    |
+| `getProjectTasksByCodespace()`    | Get project tasks by codespace         | `GET /project-tasks/by-codespace/{id}` |
 
 ## Detailed Method Documentation
 
@@ -79,14 +79,17 @@ The Codespace Service provides the following methods:
 Generates a concise title from a detailed task description using AI or fallback logic.
 
 #### Signature
+
 ```typescript
 async generateTaskTitle(request: GenerateTaskTitleRequest): Promise<GenerateTaskTitleResponse>
 ```
 
 #### Parameters
+
 - `request.task_description` (string, required): The full task description to generate title from
 
 #### Response
+
 ```typescript
 interface GenerateTaskTitleResponse {
   success: boolean
@@ -97,9 +100,11 @@ interface GenerateTaskTitleResponse {
 ```
 
 #### Example
+
 ```typescript
 const response = await codespace.generateTaskTitle({
-  task_description: "Create a user authentication system with login, registration, and password reset functionality using JWT tokens and bcrypt for password hashing"
+  task_description:
+    'Create a user authentication system with login, registration, and password reset functionality using JWT tokens and bcrypt for password hashing',
 })
 
 console.log(response.title) // "User Authentication System"
@@ -111,27 +116,29 @@ console.log(response.fallback_used) // false if AI generated, true if fallback u
 Creates a new codespace task with complete workflow including PRD generation, task creation, and Claude Code integration.
 
 #### Signature
+
 ```typescript
 async createCodespaceTaskV2(request: CreateCodespaceTaskRequestV2): Promise<CreateCodespaceTaskResponseV2>
 ```
 
 #### Parameters
+
 ```typescript
 interface CreateCodespaceTaskRequestV2 {
-  project_id: string                    // Required
-  task_description: string              // Required
-  project_repository_id?: string        // Optional
-  title?: string                        // Optional
-  branch?: string                       // Optional
-  working_branch?: string               // Optional
-  base_branch?: string                  // Optional (default: "main")
-  docs_url?: string                     // Optional
-  model_api_keys?: ModelApiKey[]        // Optional
-  github_token?: string                 // Optional
-  codespace_task_id?: string            // Optional (for continuation)
-  execution_mode?: 'implementation' | 'docs-only'  // Optional (default: "implementation")
-  model_name?: string                   // Optional
-  starter_kit_repo?: string             // Optional
+  project_id: string // Required
+  task_description: string // Required
+  project_repository_id?: string // Optional
+  title?: string // Optional
+  branch?: string // Optional
+  working_branch?: string // Optional
+  base_branch?: string // Optional (default: "main")
+  docs_url?: string // Optional
+  model_api_keys?: ModelApiKey[] // Optional
+  github_token?: string // Optional
+  codespace_task_id?: string // Optional (for continuation)
+  execution_mode?: 'implementation' | 'docs-only' | 'direct' // Optional (default: "implementation")
+  model_name?: string // Optional
+  starter_kit_repo?: string // Optional
 }
 
 interface ModelApiKey {
@@ -141,6 +148,7 @@ interface ModelApiKey {
 ```
 
 #### Response
+
 ```typescript
 interface CreateCodespaceTaskResponseV2 {
   success: boolean
@@ -152,18 +160,19 @@ interface CreateCodespaceTaskResponseV2 {
 ```
 
 #### Example
+
 ```typescript
 const response = await codespace.createCodespaceTaskV2({
-  project_id: "proj_123456",
-  task_description: "Add user profile page with avatar upload and bio editing",
-  execution_mode: "implementation",
+  project_id: 'proj_123456',
+  task_description: 'Add user profile page with avatar upload and bio editing',
+  execution_mode: 'implementation',
   model_api_keys: [
     {
-      model_name: "claude-3-sonnet",
-      api_key: "your_api_key_here"
-    }
+      model_name: 'claude-3-sonnet',
+      api_key: 'your_api_key_here',
+    },
   ],
-  github_token: "ghp_your_github_token"
+  github_token: 'ghp_your_github_token',
 })
 
 console.log(`Task created with ID: ${response.task_id}`)
@@ -174,19 +183,22 @@ console.log(`Task created with ID: ${response.task_id}`)
 Creates a codespace task that runs in the background, returning immediately with task details while work continues.
 
 #### Signature
+
 ```typescript
 async createBackgroundCodespaceTask(request: CreateBackgroundCodespaceTaskRequest): Promise<CreateBackgroundCodespaceTaskResponse>
 ```
 
 #### Parameters
+
 Same as `createCodespaceTaskV2()` - extends `CreateCodespaceTaskRequestV2`
 
 #### Response
+
 ```typescript
 interface CreateBackgroundCodespaceTaskResponse {
   success: boolean
   task_id: string
-  job_id: string      // Background job ID for status checking
+  job_id: string // Background job ID for status checking
   status: string
   message: string
   repository_connected: boolean
@@ -195,11 +207,12 @@ interface CreateBackgroundCodespaceTaskResponse {
 ```
 
 #### Example
+
 ```typescript
 const response = await codespace.createBackgroundCodespaceTask({
-  project_id: "proj_123456",
-  task_description: "Implement real-time chat functionality",
-  execution_mode: "implementation"
+  project_id: 'proj_123456',
+  task_description: 'Implement real-time chat functionality',
+  execution_mode: 'implementation',
 })
 
 console.log(`Background task started: ${response.job_id}`)
@@ -211,14 +224,17 @@ console.log(`Background task started: ${response.job_id}`)
 Retrieves a codespace task by its ID with full details.
 
 #### Signature
+
 ```typescript
 async getCodespaceTask(codespaceTaskId: string): Promise<GetCodespaceTaskResponse>
 ```
 
 #### Parameters
+
 - `codespaceTaskId` (string, required): The ID of the codespace task to retrieve
 
 #### Response
+
 ```typescript
 interface GetCodespaceTaskResponse {
   status: string
@@ -259,8 +275,9 @@ interface CodespaceTaskData {
 ```
 
 #### Example
+
 ```typescript
-const response = await codespace.getCodespaceTask("task_789012")
+const response = await codespace.getCodespaceTask('task_789012')
 const task = response.data
 
 console.log(`Task: ${task.title}`)
@@ -278,23 +295,26 @@ if (task.pull_request_url) {
 Retrieves all codespace tasks for a specific project with filtering and pagination support.
 
 #### Signature
+
 ```typescript
 async getCodespaceTasksByProject(params: GetCodespaceTasksByProjectRequest): Promise<GetCodespaceTasksByProjectResponse>
 ```
 
 #### Parameters
+
 ```typescript
 interface GetCodespaceTasksByProjectRequest {
-  project_id: string    // Required
+  project_id: string // Required
   status?: 'completed' | 'failed' | 'in_progress' | 'created' | 'cancelled'
-  limit?: number        // Optional (default: 50)
-  offset?: number       // Optional (default: 0)
-  sort_by?: string      // Optional (default: "created_at")
-  sort_order?: 'asc' | 'desc'  // Optional (default: "desc")
+  limit?: number // Optional (default: 50)
+  offset?: number // Optional (default: 0)
+  sort_by?: string // Optional (default: "created_at")
+  sort_order?: 'asc' | 'desc' // Optional (default: "desc")
 }
 ```
 
 #### Response
+
 ```typescript
 interface GetCodespaceTasksByProjectResponse {
   status: string
@@ -305,13 +325,14 @@ interface GetCodespaceTasksByProjectResponse {
 ```
 
 #### Example
+
 ```typescript
 // Get all completed tasks for a project
 const response = await codespace.getCodespaceTasksByProject({
-  project_id: "proj_123456",
-  status: "completed",
+  project_id: 'proj_123456',
+  status: 'completed',
   limit: 20,
-  sort_order: "desc"
+  sort_order: 'desc',
 })
 
 console.log(`Found ${response.total_count} completed tasks`)
@@ -325,30 +346,34 @@ response.data.forEach(task => {
 Retrieves comprehensive codespace task details including related project data, repository information, and usage statistics.
 
 #### Signature
+
 ```typescript
 async getCodespaceTaskDetailed(codespaceTaskId: string): Promise<CodespaceTaskDetailedResponse>
 ```
 
 #### Parameters
+
 - `codespaceTaskId` (string, required): The ID of the codespace task to retrieve detailed information for
 
 #### Response
+
 ```typescript
 interface CodespaceTaskDetailedResponse {
   status: string
   data: {
     task: CodespaceTaskData
-    project: any              // Project data structure
-    repository: any           // Repository data structure
-    usage_summary: any        // Usage statistics
+    project: any // Project data structure
+    repository: any // Repository data structure
+    usage_summary: any // Usage statistics
   }
   message: string
 }
 ```
 
 #### Example
+
 ```typescript
-const response = await codespace.getCodespaceTaskDetailed("task_789012")
+const response = await codespace.getCodespaceTaskDetailed('task_789012')
 const { task, project, repository, usage_summary } = response.data
 
 console.log(`Task: ${task.title}`)
@@ -362,24 +387,28 @@ console.log(`Usage: ${usage_summary.total_requests} requests`)
 Retrieves project tasks associated with a specific codespace task.
 
 #### Signature
+
 ```typescript
 async getProjectTasksByCodespace(codespaceTaskId: string): Promise<GetProjectTasksByCodespaceResponse>
 ```
 
 #### Parameters
+
 - `codespaceTaskId` (string, required): The ID of the codespace task
 
 #### Response
+
 ```typescript
 interface GetProjectTasksByCodespaceResponse {
   status: string
-  data: any[]  // Array of project task objects
+  data: any[] // Array of project task objects
 }
 ```
 
 #### Example
+
 ```typescript
-const response = await codespace.getProjectTasksByCodespace("task_789012")
+const response = await codespace.getProjectTasksByCodespace('task_789012')
 
 console.log(`Found ${response.data.length} related project tasks`)
 response.data.forEach(projectTask => {
@@ -392,6 +421,7 @@ response.data.forEach(projectTask => {
 All methods throw errors for various failure conditions. Common error types include:
 
 ### Validation Errors
+
 ```typescript
 try {
   await codespace.createCodespaceTaskV2({})
@@ -401,27 +431,29 @@ try {
 ```
 
 ### Network/Server Errors
+
 ```typescript
 try {
-  await codespace.getCodespaceTask("invalid_id")
+  await codespace.getCodespaceTask('invalid_id')
 } catch (error) {
   if (error.response?.status === 404) {
-    console.error("Task not found")
+    console.error('Task not found')
   } else if (error.response?.status === 401) {
-    console.error("Unauthorized - check your API credentials")
+    console.error('Unauthorized - check your API credentials')
   } else {
-    console.error("Network error:", error.message)
+    console.error('Network error:', error.message)
   }
 }
 ```
 
 ### Timeout Errors
+
 ```typescript
 try {
   await codespace.createCodespaceTaskV2(largeRequest)
 } catch (error) {
   if (error.code === 'ECONNABORTED') {
-    console.error("Request timed out. Consider using background task creation.")
+    console.error('Request timed out. Consider using background task creation.')
   }
 }
 ```
@@ -435,30 +467,32 @@ import { CodeGuide } from '@codeguide/core'
 
 const codeguide = new CodeGuide({
   baseUrl: 'https://api.codeguide.dev',
-  databaseApiKey: process.env.CODEGUIDE_API_KEY
+  databaseApiKey: process.env.CODEGUIDE_API_KEY,
 })
 
 async function completeTaskWorkflow() {
   try {
     // 1. Generate a title from description
     const titleResponse = await codeguide.codespace.generateTaskTitle({
-      task_description: "Implement a REST API for user management with CRUD operations, validation, and authentication middleware"
+      task_description:
+        'Implement a REST API for user management with CRUD operations, validation, and authentication middleware',
     })
 
     console.log(`Generated title: ${titleResponse.title}`)
 
     // 2. Create the task
     const taskResponse = await codeguide.codespace.createCodespaceTaskV2({
-      project_id: "proj_123456",
-      task_description: "Implement a REST API for user management with CRUD operations, validation, and authentication middleware",
+      project_id: 'proj_123456',
+      task_description:
+        'Implement a REST API for user management with CRUD operations, validation, and authentication middleware',
       title: titleResponse.title,
-      execution_mode: "implementation",
+      execution_mode: 'implementation',
       model_api_keys: [
         {
-          model_name: "claude-3-sonnet",
-          api_key: process.env.CLAUDE_API_KEY
-        }
-      ]
+          model_name: 'claude-3-sonnet',
+          api_key: process.env.CLAUDE_API_KEY,
+        },
+      ],
     })
 
     console.log(`Task created: ${taskResponse.task_id}`)
@@ -478,9 +512,8 @@ async function completeTaskWorkflow() {
     }
 
     checkProgress()
-
   } catch (error) {
-    console.error("Workflow failed:", error.message)
+    console.error('Workflow failed:', error.message)
   }
 }
 
@@ -494,9 +527,9 @@ async function backgroundTaskExample() {
   try {
     // Create background task
     const response = await codeguide.codespace.createBackgroundCodespaceTask({
-      project_id: "proj_123456",
-      task_description: "Add comprehensive test suite for existing authentication module",
-      execution_mode: "implementation"
+      project_id: 'proj_123456',
+      task_description: 'Add comprehensive test suite for existing authentication module',
+      execution_mode: 'implementation',
     })
 
     console.log(`Background task started: ${response.job_id}`)
@@ -509,20 +542,21 @@ async function backgroundTaskExample() {
         console.log(`Status: ${task.data.status}`)
 
         if (['completed', 'failed'].includes(task.data.status)) {
-          console.log(`Task ${task.data.status === 'completed' ? 'completed successfully' : 'failed'}`)
+          console.log(
+            `Task ${task.data.status === 'completed' ? 'completed successfully' : 'failed'}`
+          )
           return
         }
 
         setTimeout(pollStatus, 10000) // Poll every 10 seconds
       } catch (error) {
-        console.error("Error checking status:", error.message)
+        console.error('Error checking status:', error.message)
       }
     }
 
     pollStatus()
-
   } catch (error) {
-    console.error("Background task creation failed:", error.message)
+    console.error('Background task creation failed:', error.message)
   }
 }
 ```
@@ -531,14 +565,14 @@ async function backgroundTaskExample() {
 
 ```typescript
 async function projectTaskManagement() {
-  const projectId = "proj_123456"
+  const projectId = 'proj_123456'
 
   try {
     // Get all tasks for the project
     const tasksResponse = await codeguide.codespace.getCodespaceTasksByProject({
       project_id: projectId,
       limit: 100,
-      sort_order: "desc"
+      sort_order: 'desc',
     })
 
     console.log(`Project has ${tasksResponse.total_count} total tasks`)
@@ -549,7 +583,7 @@ async function projectTaskManagement() {
       return acc
     }, {})
 
-    console.log("Tasks by status:", tasksByStatus)
+    console.log('Tasks by status:', tasksByStatus)
 
     // Get detailed info for the most recent task
     if (tasksResponse.data.length > 0) {
@@ -560,9 +594,8 @@ async function projectTaskManagement() {
       console.log(`Project: ${detailedResponse.data.project.name}`)
       console.log(`Repository: ${detailedResponse.data.repository?.repo_url || 'No repository'}`)
     }
-
   } catch (error) {
-    console.error("Project task management failed:", error.message)
+    console.error('Project task management failed:', error.message)
   }
 }
 ```
@@ -594,7 +627,7 @@ import type {
   GetProjectTasksByCodespaceResponse,
   GetCodespaceTasksByProjectRequest,
   GetCodespaceTasksByProjectResponse,
-  CodespaceTaskDetailedResponse
+  CodespaceTaskDetailedResponse,
 } from '@codeguide/core'
 ```
 

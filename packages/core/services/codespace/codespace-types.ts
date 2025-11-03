@@ -46,7 +46,7 @@ export interface CreateCodespaceTaskRequestV2 {
   model_api_keys?: ModelApiKey[]
   github_token?: string
   codespace_task_id?: string
-  execution_mode?: 'implementation' | 'docs-only'
+  execution_mode?: 'implementation' | 'docs-only' | 'direct'
   model_name?: string
   starter_kit_repo?: string
   use_enhanced_summary?: boolean

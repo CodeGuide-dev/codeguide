@@ -9,6 +9,7 @@ export interface AnalyzeRepositoryRequest {
   codespace_task_description?: string
   codespace_branch?: string
   codespace_base_branch?: string
+  execution_mode?: 'implementation' | 'docs-only' | 'direct'
   model_api_keys?: {
     model_name: string
     api_key: string

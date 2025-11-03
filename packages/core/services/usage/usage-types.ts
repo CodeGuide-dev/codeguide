@@ -68,18 +68,72 @@ export interface UsageSummaryResponse {
   }
 }
 
-export interface AuthorizationResponse {
+export interface CreditBalance {
+  total_allotted: number
+  total_consumed: number
+  remaining_credits: number
+  is_over_limit: boolean
+  utilization_percentage: number
+  billing_cycle_start: string
+  billing_cycle_end: string
+}
+
+export interface LimitInfo {
+  allowed?: boolean
+  current_usage?: number
+  limit: number
+  remaining?: number
+  period_type?: string
+  period_start?: string | null
+  period_end?: string | null
+  message?: string
+  is_unlimited: boolean
+  period?: string
+  description?: string
+}
+
+export interface PlanLimits {
+  plan_type: string
+  limits: {
+    codespace_tasks: LimitInfo
+    api_calls: LimitInfo
+    storage_gb: LimitInfo
+    projects: LimitInfo
+    collaborators: LimitInfo
+  }
+}
+
+export interface AuthorizationSubscription {
+  id: string
+  status: string
+  interval: string
+  current_period_start: string
+  current_period_end: string
+  price_id: string
+  product_name: string | null
+  plan_name: string
+}
+
+export interface AuthorizationData {
   user_id: string
-  subscription: {
-    plan: string
-    status: string
-    features: string[]
-  }
-  usage_limits: {
-    monthly_credits: number
-    max_calls_per_day: number
-  }
-  permissions: string[]
+  subscription: AuthorizationSubscription | null
+  credit_balance: CreditBalance
+  has_active_subscription: boolean
+  has_previous_subscriptions: boolean
+  is_within_credit_limit: boolean
+  authorization_level: string
+  restrictions: string[]
+  can_create_tasks: boolean
+  can_analyze_repos: boolean
+  can_access_previous_projects: boolean
+  plan_limits: PlanLimits
+  codespace_task_limit: LimitInfo | null
+}
+
+export interface AuthorizationResponse {
+  success: boolean
+  data: AuthorizationData
+  message: string
 }
 
 export interface FreeUserStatusResponse {

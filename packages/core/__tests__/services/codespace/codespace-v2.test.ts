@@ -2,7 +2,7 @@ import { CodespaceService } from '../../../services/codespace/codespace-service'
 import {
   CreateCodespaceTaskRequestV2,
   CreateBackgroundCodespaceTaskRequest,
-  ModelApiKey
+  ModelApiKey,
 } from '../../../services/codespace/codespace-types'
 import { APIServiceConfig } from '../../../types'
 import axios from 'axios'
@@ -55,8 +55,9 @@ describe('CodespaceService - V2 Task Endpoints', () => {
         task_description: 'Create a new feature',
       }
 
-      await expect(codespaceService.createCodespaceTaskV2(invalidRequest as any))
-        .rejects.toThrow('project_id is required')
+      await expect(codespaceService.createCodespaceTaskV2(invalidRequest as any)).rejects.toThrow(
+        'project_id is required'
+      )
     })
 
     it('should throw error for missing task_description', async () => {
@@ -64,8 +65,9 @@ describe('CodespaceService - V2 Task Endpoints', () => {
         project_id: 'project-123',
       }
 
-      await expect(codespaceService.createCodespaceTaskV2(invalidRequest as any))
-        .rejects.toThrow('task_description is required')
+      await expect(codespaceService.createCodespaceTaskV2(invalidRequest as any)).rejects.toThrow(
+        'task_description is required'
+      )
     })
 
     it('should set default base_branch to main', async () => {
@@ -80,9 +82,14 @@ describe('CodespaceService - V2 Task Endpoints', () => {
         message: 'Task created successfully',
       }
 
-      mockAxios.onPost('/codespace/task', expect.objectContaining({
-        base_branch: 'main'
-      })).reply(200, mockResponse)
+      mockAxios
+        .onPost(
+          '/codespace/task',
+          expect.objectContaining({
+            base_branch: 'main',
+          })
+        )
+        .reply(200, mockResponse)
 
       const result = await codespaceService.createCodespaceTaskV2(requestWithoutBaseBranch)
 
@@ -96,12 +103,13 @@ describe('CodespaceService - V2 Task Endpoints', () => {
         execution_mode: 'invalid-mode' as any,
       }
 
-      await expect(codespaceService.createCodespaceTaskV2(invalidRequest))
-        .rejects.toThrow('execution_mode must be either "implementation" or "docs-only"')
+      await expect(codespaceService.createCodespaceTaskV2(invalidRequest)).rejects.toThrow(
+        'execution_mode must be either "implementation", "docs-only", or "direct"'
+      )
     })
 
     it('should accept valid execution modes', async () => {
-      const validModes = ['implementation', 'docs-only'] as const
+      const validModes = ['implementation', 'docs-only', 'direct'] as const
 
       for (const mode of validModes) {
         const request = {
@@ -130,8 +138,9 @@ describe('CodespaceService - V2 Task Endpoints', () => {
         model_api_keys: 'not-an-array' as any,
       }
 
-      await expect(codespaceService.createCodespaceTaskV2(invalidRequest))
-        .rejects.toThrow('model_api_keys must be an array')
+      await expect(codespaceService.createCodespaceTaskV2(invalidRequest)).rejects.toThrow(
+        'model_api_keys must be an array'
+      )
     })
 
     it('should validate individual model_api_key entries', async () => {
@@ -144,8 +153,9 @@ describe('CodespaceService - V2 Task Endpoints', () => {
         ],
       }
 
-      await expect(codespaceService.createCodespaceTaskV2(invalidRequest))
-        .rejects.toThrow('Each model_api_key must have a valid model_name string')
+      await expect(codespaceService.createCodespaceTaskV2(invalidRequest)).rejects.toThrow(
+        'Each model_api_key must have a valid model_name string'
+      )
     })
 
     it('should accept valid model_api_keys', async () => {
@@ -233,8 +243,9 @@ describe('CodespaceService - V2 Task Endpoints', () => {
         task_description: 'Missing project_id',
       }
 
-      await expect(codespaceService.createBackgroundCodespaceTask(invalidRequest as any))
-        .rejects.toThrow('project_id is required')
+      await expect(
+        codespaceService.createBackgroundCodespaceTask(invalidRequest as any)
+      ).rejects.toThrow('project_id is required')
     })
 
     it('should work with docs-only mode', async () => {

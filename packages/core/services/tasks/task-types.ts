@@ -23,19 +23,41 @@ export interface RawTask {
   status?: string
 }
 
+export interface ProjectTaskSubtask {
+  id: string
+  title: string
+  description: string
+  details: string
+  status: string
+  test_strategy: string
+  priority: string
+  ordinal: number
+  task_group_id: string
+  parent_task_id: string
+  ai_result: string
+  created_at: string
+  user_id: string
+}
+
 export interface ProjectTask {
   id: string
   title: string
-  description?: string
+  description: string
+  details: string
   status: string
-  priority?: string
-  user_id: string
-  task_group_id: string
-  parent_task_id?: string
+  test_strategy: string
+  priority: string
   ordinal: number
+  task_group_id: string
+  parent_task_id: string
+  ai_result: string
   created_at: string
-  updated_at: string
-  subtasks?: ProjectTask[]
+  user_id: string
+  subtasks?: ProjectTaskSubtask[]
+  // Optional fields for backward compatibility
+  updated_at?: string
+  // Legacy support for simpler subtask structure
+  subtasks_legacy?: ProjectTask[]
 }
 
 export interface CreateTaskGroupRequest {

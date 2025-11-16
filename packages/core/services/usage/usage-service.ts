@@ -15,6 +15,12 @@ import {
   TrackCodespaceUsageResponse,
   CodespaceTaskUsageResponse,
   HealthResponse,
+  DashboardAnalyticsRequest,
+  DashboardAnalyticsResponse,
+  UsageDetailsRequest,
+  UsageDetailsResponse,
+  ServiceBreakdownRequest,
+  ServiceBreakdownResponse,
 } from './usage-types'
 
 export class UsageService extends BaseService {
@@ -29,6 +35,7 @@ export class UsageService extends BaseService {
   async checkCredits(params: CreditCheckRequest): Promise<CreditCheckResponse> {
     const queryParams = new URLSearchParams()
 
+    queryParams.append('model_key', params.model_key)
     if (params.input_tokens !== undefined)
       queryParams.append('input_tokens', params.input_tokens.toString())
     if (params.output_tokens !== undefined)
@@ -40,16 +47,7 @@ export class UsageService extends BaseService {
     return this.get<CreditCheckResponse>(url)
   }
 
-  async getUsageSummary(params?: UsageSummaryRequest): Promise<UsageSummaryResponse> {
-    const queryParams = new URLSearchParams()
-
-    if (params?.start_date) queryParams.append('start_date', params.start_date)
-    if (params?.end_date) queryParams.append('end_date', params.end_date)
-
-    const url = `/usage/summary${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
-    return this.get<UsageSummaryResponse>(url)
-  }
-
+  
   async getAuthorization(): Promise<AuthorizationResponse> {
     return this.get<AuthorizationResponse>('/usage/authorization')
   }
@@ -92,5 +90,56 @@ export class UsageService extends BaseService {
     } catch {
       return false
     }
+  }
+
+  // Dashboard Analytics Methods
+  async getDashboardAnalytics(params?: DashboardAnalyticsRequest): Promise<DashboardAnalyticsResponse> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.period) queryParams.append('period', params.period)
+    if (params?.start_date) queryParams.append('start_date', params.start_date)
+    if (params?.end_date) queryParams.append('end_date', params.end_date)
+    if (params?.service_type) queryParams.append('service_type', params.service_type)
+
+    const url = `/usage/dashboard/analytics${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    return this.get<DashboardAnalyticsResponse>(url)
+  }
+
+  async getUsageDetails(params?: UsageDetailsRequest): Promise<UsageDetailsResponse> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.period) queryParams.append('period', params.period)
+    if (params?.start_date) queryParams.append('start_date', params.start_date)
+    if (params?.end_date) queryParams.append('end_date', params.end_date)
+    if (params?.service_type) queryParams.append('service_type', params.service_type)
+    if (params?.page !== undefined) queryParams.append('page', params.page.toString())
+    if (params?.page_size !== undefined) queryParams.append('page_size', params.page_size.toString())
+    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
+    if (params?.sort_order) queryParams.append('sort_order', params.sort_order)
+
+    const url = `/usage/dashboard/details${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    return this.get<UsageDetailsResponse>(url)
+  }
+
+  async getUsageSummary(params?: UsageSummaryRequest): Promise<UsageSummaryResponse> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.period) queryParams.append('period', params.period)
+    if (params?.start_date) queryParams.append('start_date', params.start_date)
+    if (params?.end_date) queryParams.append('end_date', params.end_date)
+
+    const url = `/usage/dashboard/summary${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    return this.get<UsageSummaryResponse>(url)
+  }
+
+  async getServiceBreakdown(params?: ServiceBreakdownRequest): Promise<ServiceBreakdownResponse> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.period) queryParams.append('period', params.period)
+    if (params?.start_date) queryParams.append('start_date', params.start_date)
+    if (params?.end_date) queryParams.append('end_date', params.end_date)
+
+    const url = `/usage/dashboard/services${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    return this.get<ServiceBreakdownResponse>(url)
   }
 }

@@ -13,7 +13,7 @@ export interface TrackUsageResponse {
   message: string
 }
 
-export interface CreditBalanceResponse {
+export interface CreditBalanceData {
   user_id: string
   total_consumed: number
   total_allotted: number
@@ -25,6 +25,10 @@ export interface CreditBalanceResponse {
     plan: string
     status: string
   }
+}
+
+export interface CreditBalanceResponse {
+  data: CreditBalanceData
 }
 
 export interface CreditCheckRequest {
@@ -41,32 +45,6 @@ export interface CreditCheckResponse {
   model_key: string
 }
 
-export interface UsageSummaryRequest {
-  start_date?: string
-  end_date?: string
-}
-
-export interface UsageSummaryResponse {
-  user_id: string
-  period: {
-    start_date: string
-    end_date: string
-  }
-  usage_summary: {
-    total_credits_used: number
-    total_calls: number
-    model_breakdown: Record<string, any>
-    daily_usage: Array<{
-      date: string
-      credits_used: number
-      calls: number
-    }>
-  }
-  subscription: {
-    plan: string
-    status: string
-  }
-}
 
 export interface CreditBalance {
   total_allotted: number
@@ -198,4 +176,177 @@ export interface HealthResponse {
   status: string
   timestamp: string
   version: string
+}
+
+// Dashboard Analytics Types
+export type PeriodType = "7d" | "1w" | "1m" | "3m"
+export type ServiceType = "docs" | "chat" | "codespace_task" | "api"
+export type SortOrder = "asc" | "desc"
+export type SortByField = "created_at" | "credits_consumed" | "cost_amount"
+
+export interface DashboardAnalyticsRequest {
+  period?: PeriodType
+  start_date?: string
+  end_date?: string
+  service_type?: ServiceType
+}
+
+export interface DailyUsage {
+  date: string
+  credits_consumed: number
+  cost_usd: number
+  requests_count: number
+  average_credits_per_request: number
+}
+
+export interface ServiceUsage {
+  service_type: ServiceType
+  credits_consumed: number
+  requests_count: number
+}
+
+export interface AnalyticsTotals {
+  credits_consumed: number
+  cost_usd: number
+  requests_count: number
+}
+
+export interface AnalyticsAverages {
+  daily_credits: number
+  daily_requests: number
+}
+
+export interface AnalyticsTrends {
+  credits_consumed: number
+  requests_count: number
+}
+
+export interface PeriodInfo {
+  start: string
+  end: string
+  label: string
+}
+
+export interface DashboardAnalyticsResponse {
+  status: string
+  data: {
+    period: PeriodInfo
+    daily_usage: DailyUsage[]
+    totals: AnalyticsTotals
+    averages: AnalyticsAverages
+    trends: AnalyticsTrends
+    top_services: ServiceUsage[]
+  }
+}
+
+// Usage Details Types
+export interface UsageDetailsRequest {
+  period?: PeriodType
+  start_date?: string
+  end_date?: string
+  service_type?: ServiceType
+  page?: number
+  page_size?: number
+  sort_by?: SortByField
+  sort_order?: SortOrder
+}
+
+export interface UsageDetailRecord {
+  id: string
+  created_at: string
+  service_type: ServiceType
+  model_name: string
+  usage_type: string
+  units_consumed: number
+  credits_consumed: number
+  cost_amount: number | null
+}
+
+export interface UsageDetailsPagination {
+  page: number
+  page_size: number
+  total_count: number
+  total_pages: number
+  has_next: boolean
+  has_prev: boolean
+}
+
+export interface UsageDetailsFilters {
+  period: string | null
+  start_date: string | null
+  end_date: string | null
+  service_type: string | null
+}
+
+export interface UsageDetailsResponse {
+  status: string
+  data: UsageDetailRecord[]
+  pagination: UsageDetailsPagination
+  filters: UsageDetailsFilters
+}
+
+// Usage Summary Types
+export interface UsageSummaryRequest {
+  period?: PeriodType
+  start_date?: string
+  end_date?: string
+}
+
+export interface CurrentPeriodUsage {
+  credits_consumed: number
+  cost_usd: number
+  requests_count: number
+}
+
+export interface PreviousPeriodUsage {
+  credits_consumed: number
+  cost_usd: number
+  requests_count: number
+}
+
+export interface BillingCycleInfo {
+  total_allotted: number
+  total_consumed: number
+  remaining_credits: number
+}
+
+export interface UsageSummaryResponse {
+  status: string
+  data: {
+    current_period: CurrentPeriodUsage
+    previous_period: PreviousPeriodUsage
+    billing_cycle: BillingCycleInfo
+    utilization_percentage: number
+    remaining_credits: number
+    daily_average: number
+    projected_monthly: number
+  }
+}
+
+// Service Breakdown Types
+export interface ServiceBreakdownRequest {
+  period?: PeriodType
+  start_date?: string
+  end_date?: string
+}
+
+export interface ServiceBreakdown {
+  service_type: ServiceType
+  credits_consumed: number
+  percentage: number
+  cost_usd: number
+  requests_count: number
+  trend: number
+}
+
+export interface ServiceBreakdownData {
+  period: PeriodInfo
+  services: ServiceBreakdown[]
+  total_credits: number
+  total_cost: number
+}
+
+export interface ServiceBreakdownResponse {
+  status: string
+  data: ServiceBreakdownData
 }

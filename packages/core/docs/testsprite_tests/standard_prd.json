@@ -1,0 +1,122 @@
+{
+  "meta": {
+    "project": "VitePress Documentation Site for @codeguide/core",
+    "date": "2025-11-04",
+    "prepared_by": "CodeGuide Team"
+  },
+  "product_overview": "A modern, fast, and developer-friendly documentation site for the @codeguide/core TypeScript SDK, implemented with VitePress. It offers a searchable, navigable, mobile-responsive, dark-mode supported platform integrated seamlessly with GitHub to enhance developer experience and SDK adoption.",
+  "core_goals": [
+    "Migrate traditional markdown documentation to an interactive, searchable site.",
+    "Provide an intuitive and fast-loading documentation experience with excellent navigation.",
+    "Enable easy content updates and community contributions using markdown authoring.",
+    "Improve SEO and content discoverability for the SDK documentation.",
+    "Ensure brand consistency with cohesive styling and theming matching CodeGuide standards."
+  ],
+  "key_features": [
+    "Homepage featuring a hero section with quick start guidance and feature highlights.",
+    "Hierarchical and collapsible sidebar navigation organized by documentation topics.",
+    "Full-text local search across all markdown content with keyboard shortcuts and results highlighting.",
+    "Dark mode support with automatic system theme detection and manual toggle persisting user preferences.",
+    "Mobile-responsive design optimized for various device sizes with touch-friendly navigation.",
+    "GitHub integration with 'Edit this page' links and repository social icons.",
+    "Syntax highlighting for TypeScript and JavaScript code samples with copy functionality.",
+    "Auto-generated table of contents and structured content layout.",
+    "Custom branding and styling including brand colors and enhanced UI components.",
+    "Development workflows for easy local content updates, preview, and build processes."
+  ],
+  "user_flow_summary": [
+    "User lands on the homepage to view hero message, features, and quick start guide.",
+    "User navigates through sidebar or top navigation to explore documentation sections.",
+    "User performs a search using Ctrl/Cmd+K to find specific information with highlighted results.",
+    "User toggles dark mode manually or uses system preference to switch themes.",
+    "User clicks 'Edit this page on GitHub' to propose changes or view source file.",
+    "User accesses documentation on mobile device with responsive menu and touch support.",
+    "Developers update documentation by editing markdown files locally and preview changes with hot reload.",
+    "Content is built and deployed through CI/CD pipelines to static hosting platforms."
+  ],
+  "validation_criteria": [
+    "Documentation site loads under 2 seconds on standard broadband connections.",
+    "Full-text search returns accurate results with fast response and supports keyboard navigation.",
+    "Dark mode toggle works correctly and persists user choice across sessions.",
+    "Mobile responsiveness verified on common device screen sizes with smooth navigation.",
+    "GitHub edit links direct correctly to corresponding markdown files in repository.",
+    "Code highlighting accurately presents TypeScript/JavaScript samples with line numbers and copy feature.",
+    "All navigation links correctly route within the site with active page highlighting.",
+    "Performance metrics meet or exceed targets (e.g. FCP < 1.5s, CLS < 0.1).",
+    "Accessibility standards (WCAG AA) met including keyboard navigation and color contrast.",
+    "Successful local development workflow with no build errors and hot module replacement functioning."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "VitePress",
+      "Vue.js",
+      "TypeScript",
+      "Markdown"
+    ],
+    "features": [
+      {
+        "name": "generateQuestionnaire",
+        "description": "Generates a questionnaire for a task description to gather additional context. Supports task description, project context, repository info, and file attachments.",
+        "files": [
+          "codespace-service.md"
+        ]
+      },
+      {
+        "name": "createCodespaceTask",
+        "description": "Creates a codespace task using the legacy endpoint for backward compatibility. Supports task title, description, and optional conversation ID.",
+        "files": [
+          "codespace-service.md"
+        ]
+      },
+      {
+        "name": "getCodespaceModels",
+        "description": "Retrieves all available codespace models with optional filtering by provider ID or execution mode. Returns models with provider information.",
+        "files": [
+          "codespace-service.md"
+        ]
+      },
+      {
+        "name": "getCodespaceModel",
+        "description": "Retrieves a specific codespace model by ID with provider information including name, execution mode, and base URLs.",
+        "files": [
+          "codespace-service.md"
+        ]
+      },
+      {
+        "name": "getLLMModelProviders",
+        "description": "Retrieves all available LLM model providers with their IDs, names, keys, and logo sources.",
+        "files": [
+          "codespace-service.md"
+        ]
+      },
+      {
+        "name": "getLLMModelProvider",
+        "description": "Retrieves a specific LLM model provider by ID with complete provider information.",
+        "files": [
+          "codespace-service.md"
+        ]
+      },
+      {
+        "name": "getModelsByProvider",
+        "description": "Retrieves all models for a specific provider by provider ID, returning an array of codespace models.",
+        "files": [
+          "codespace-service.md"
+        ]
+      },
+      {
+        "name": "TypeExports",
+        "description": "Exports TypeScript type definitions for codespace service including request/response types, task types, model types, and provider types.",
+        "files": [
+          "codespace-service.md"
+        ]
+      },
+      {
+        "name": "RelatedDocumentation",
+        "description": "Provides cross-references to related documentation including Codespace Models, Projects Service, and CodeGuide Client documentation.",
+        "files": [
+          "codespace-service.md"
+        ]
+      }
+    ]
+  }
+}

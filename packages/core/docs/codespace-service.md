@@ -71,6 +71,14 @@ The Codespace Service provides the following methods:
 | `getCodespaceTasksByProject()`    | Get tasks for a project                | `GET /codespace/tasks/project/{id}`    |
 | `getCodespaceTaskDetailed()`      | Get detailed task info                 | `GET /codespace/task/{id}/detailed`    |
 | `getProjectTasksByCodespace()`    | Get project tasks by codespace         | `GET /project-tasks/by-codespace/{id}` |
+| `getRelatedCodespaceTasks()`      | Get related tasks by parent ID         | `GET /codespace/tasks/related/{id}`    |
+| `generateQuestionnaire()`         | Generate questionnaire for task        | `POST /codespace/generate-questionnaire` |
+| `createCodespaceTask()`           | Create codespace task (legacy)        | `POST /codespace/create-task`          |
+| `getCodespaceModels()`            | Get all codespace models              | `GET /api/codespace-models/models`     |
+| `getCodespaceModel()`             | Get specific codespace model          | `GET /api/codespace-models/models/{id}` |
+| `getLLMModelProviders()`          | Get all LLM model providers           | `GET /api/codespace-models/providers`  |
+| `getLLMModelProvider()`           | Get specific LLM model provider       | `GET /api/codespace-models/providers/{id}` |
+| `getModelsByProvider()`           | Get models by provider                | `GET /api/codespace-models/providers/{id}/models` |
 
 ## Detailed Method Documentation
 
@@ -416,6 +424,420 @@ response.data.forEach(projectTask => {
 })
 ```
 
+### 8. getRelatedCodespaceTasks()
+
+Retrieves codespace tasks that are related to a parent task ID, including model information and attachments.
+
+#### Signature
+
+```typescript
+async getRelatedCodespaceTasks(params: GetRelatedCodespaceTasksRequest): Promise<CodespaceTasksListResponse>
+```
+
+#### Parameters
+
+```typescript
+interface GetRelatedCodespaceTasksRequest {
+  parent_id: string // Required: The parent codespace task ID
+  status?: 'completed' | 'failed' | 'in_progress' | 'created' | 'cancelled'
+  limit?: number // Optional (default: 50)
+  offset?: number // Optional (default: 0)
+  sort_by?: string // Optional (default: "created_at")
+  sort_order?: 'asc' | 'desc' // Optional (default: "desc")
+}
+```
+
+#### Response
+
+```typescript
+interface CodespaceTasksListResponse {
+  status: string
+  data: CodespaceTaskInDBWithModel[]
+  total_count: number
+  message: string
+}
+
+interface CodespaceTaskInDBWithModel {
+  id: string
+  codespace_task_id: string
+  project_id: string
+  user_id: string
+  status: string
+  progress: string
+  created_at: string
+  updated_at?: string
+  completed_at?: string
+  title: string
+  task_description: string
+  metadata?: any
+  model_id?: string
+  execution_mode?: string
+  context_data?: any
+  model?: CodespaceModelWithProvider // Model information
+  task_models?: CodespaceTaskModelInDB[] // Associated task models
+  attachments?: AttachmentResponse[] // Associated attachments
+}
+
+interface CodespaceModelWithProvider {
+  id: string
+  created_at: string
+  key?: string
+  name?: string
+  provider_id?: string
+  base_url?: string
+  completion_base_url?: string
+  execution_mode?: 'opencode' | 'claude-code' | 'docs-only' | 'implementation'
+  logo_src?: string
+  provider?: LLMModelProviderInDB
+}
+
+interface CodespaceTaskModelInDB {
+  id: string
+  created_at: string
+  codespace_task_id: string
+  model_id: string
+  model_name?: string
+  model_key?: string
+  provider_id?: string
+  provider_name?: string
+  execution_mode?: string
+}
+
+interface AttachmentResponse {
+  id: string
+  filename: string
+  file_data: string
+  mime_type: string
+  file_size: number
+  description?: string
+  created_at: string
+}
+```
+
+#### Example
+
+```typescript
+// Get all related tasks for a parent task
+const response = await codespace.getRelatedCodespaceTasks({
+  parent_id: 'parent_task_uuid_here',
+  status: 'in_progress',
+  limit: 10,
+  sort_by: 'created_at',
+  sort_order: 'desc'
+})
+
+console.log(`Found ${response.total_count} related tasks`)
+response.data.forEach(task => {
+  console.log(`- ${task.title} (${task.status})`)
+  console.log(`  Model: ${task.model?.name || 'Default'}`)
+  console.log(`  Attachments: ${task.attachments?.length || 0}`)
+
+  if (task.task_models && task.task_models.length > 0) {
+    console.log(`  Task Models: ${task.task_models.map(tm => tm.model_name).join(', ')}`)
+  }
+})
+
+// Get completed related tasks with pagination
+const completedTasks = await codespace.getRelatedCodespaceTasks({
+  parent_id: 'parent_task_uuid_here',
+  status: 'completed',
+  limit: 5,
+  offset: 0
+})
+
+console.log(`Completed related tasks: ${completedTasks.data.length} of ${completedTasks.total_count}`)
+```
+
+### 9. generateQuestionnaire()
+
+Generates a questionnaire for a task description to gather additional context.
+
+#### Signature
+
+```typescript
+async generateQuestionnaire(request: CodespaceQuestionnaireRequest): Promise<CodespaceQuestionnaireResponse>
+```
+
+#### Parameters
+
+```typescript
+interface CodespaceQuestionnaireRequest {
+  task_description: string                    // Required: Task description
+  project_context?: string                    // Optional: Project context
+  repository_info?: {                        // Optional: Repository information
+    name?: string
+    description?: string
+  }
+  attachments?: Attachment[]                  // Optional: File attachments
+}
+
+interface Attachment {
+  filename: string
+  file_data: string      // Base64 encoded file data
+  mime_type: string
+  file_size: number
+  description?: string
+}
+```
+
+#### Response
+
+```typescript
+interface CodespaceQuestionnaireResponse {
+  success: boolean
+  questions: string[]     // Array of generated questions
+  message: string
+}
+```
+
+#### Example
+
+```typescript
+const response = await codespace.generateQuestionnaire({
+  task_description: 'Implement user authentication system',
+  project_context: 'React application with Node.js backend',
+  repository_info: {
+    name: 'my-app',
+    description: 'Full-stack web application',
+  },
+})
+
+console.log('Generated questions:')
+response.questions.forEach((question, index) => {
+  console.log(`${index + 1}. ${question}`)
+})
+```
+
+### 9. createCodespaceTask()
+
+Creates a codespace task using the legacy endpoint (for backward compatibility).
+
+#### Signature
+
+```typescript
+async createCodespaceTask(request: CreateCodespaceTaskRequest): Promise<CreateCodespaceTaskResponse>
+```
+
+#### Parameters
+
+```typescript
+interface CreateCodespaceTaskRequest {
+  title: string                    // Required: Task title
+  description: string              // Required: Task description
+  conversation_id?: string         // Optional: Conversation ID
+}
+```
+
+#### Response
+
+```typescript
+interface CreateCodespaceTaskResponse {
+  success: boolean
+  task_id: string
+  message: string
+}
+```
+
+#### Example
+
+```typescript
+const response = await codespace.createCodespaceTask({
+  title: 'User Authentication',
+  description: 'Implement login and registration',
+})
+
+console.log(`Task created: ${response.task_id}`)
+```
+
+## Codespace Models Methods
+
+The Codespace Service also provides methods for managing LLM models and providers used in codespace tasks.
+
+### 10. getCodespaceModels()
+
+Retrieves all available codespace models with optional filtering.
+
+#### Signature
+
+```typescript
+async getCodespaceModels(query?: GetCodespaceModelsQuery): Promise<GetCodespaceModelsResponse>
+```
+
+#### Parameters
+
+```typescript
+interface GetCodespaceModelsQuery {
+  provider_id?: string        // Optional: Filter by provider ID
+  execution_mode?: string     // Optional: Filter by execution mode
+}
+```
+
+#### Response
+
+```typescript
+interface GetCodespaceModelsResponse extends Array<CodespaceModelWithProvider> {}
+
+interface CodespaceModelWithProvider {
+  id: string
+  created_at: string
+  key?: string
+  name?: string
+  provider_id?: string
+  base_url?: string
+  completion_base_url?: string
+  execution_mode?: 'opencode' | 'claude-code' | 'docs-only' | 'implementation'
+  logo_src?: string
+  provider?: LLMModelProviderInDB
+}
+
+interface LLMModelProviderInDB {
+  id: string
+  created_at: string
+  name?: string
+  key?: string
+  logo_src?: string
+}
+```
+
+#### Example
+
+```typescript
+// Get all models
+const allModels = await codespace.getCodespaceModels()
+
+// Filter by provider
+const openaiModels = await codespace.getCodespaceModels({
+  provider_id: 'provider_openai_id',
+})
+
+// Filter by execution mode
+const implementationModels = await codespace.getCodespaceModels({
+  execution_mode: 'implementation',
+})
+
+console.log(`Found ${allModels.length} total models`)
+allModels.forEach(model => {
+  console.log(`- ${model.name} (${model.provider?.name})`)
+})
+```
+
+### 11. getCodespaceModel()
+
+Retrieves a specific codespace model by ID.
+
+#### Signature
+
+```typescript
+async getCodespaceModel(modelId: string): Promise<GetCodespaceModelResponse>
+```
+
+#### Parameters
+
+- `modelId` (string, required): The UUID of the model
+
+#### Returns
+
+- `Promise<GetCodespaceModelResponse>`: Model object with provider information
+
+#### Example
+
+```typescript
+const model = await codespace.getCodespaceModel('model_uuid_here')
+
+console.log(`Model: ${model.name}`)
+console.log(`Provider: ${model.provider?.name}`)
+console.log(`Execution Mode: ${model.execution_mode}`)
+console.log(`Base URL: ${model.base_url}`)
+```
+
+### 12. getLLMModelProviders()
+
+Retrieves all available LLM model providers.
+
+#### Signature
+
+```typescript
+async getLLMModelProviders(): Promise<GetLLMModelProvidersResponse>
+```
+
+#### Returns
+
+```typescript
+interface GetLLMModelProvidersResponse extends Array<LLMModelProviderInDB> {}
+```
+
+#### Example
+
+```typescript
+const providers = await codespace.getLLMModelProviders()
+
+console.log(`Found ${providers.length} providers:`)
+providers.forEach(provider => {
+  console.log(`- ${provider.name} (${provider.key})`)
+})
+```
+
+### 13. getLLMModelProvider()
+
+Retrieves a specific LLM model provider by ID.
+
+#### Signature
+
+```typescript
+async getLLMModelProvider(providerId: string): Promise<GetLLMModelProviderResponse>
+```
+
+#### Parameters
+
+- `providerId` (string, required): The UUID of the provider
+
+#### Returns
+
+- `Promise<GetLLMModelProviderResponse>`: Provider object
+
+#### Example
+
+```typescript
+const provider = await codespace.getLLMModelProvider('provider_uuid_here')
+
+console.log(`Provider: ${provider.name}`)
+console.log(`Key: ${provider.key}`)
+if (provider.logo_src) {
+  console.log(`Logo: ${provider.logo_src}`)
+}
+```
+
+### 14. getModelsByProvider()
+
+Retrieves all models for a specific provider.
+
+#### Signature
+
+```typescript
+async getModelsByProvider(providerId: string): Promise<GetModelsByProviderResponse>
+```
+
+#### Parameters
+
+- `providerId` (string, required): The UUID of the provider
+
+#### Returns
+
+```typescript
+interface GetModelsByProviderResponse extends Array<CodespaceModelInDB> {}
+```
+
+#### Example
+
+```typescript
+const openaiModels = await codespace.getModelsByProvider('provider_openai_id')
+
+console.log(`Found ${openaiModels.length} OpenAI models:`)
+openaiModels.forEach(model => {
+  console.log(`- ${model.name} (${model.execution_mode})`)
+})
+```
+
 ## Error Handling
 
 All methods throw errors for various failure conditions. Common error types include:
@@ -618,9 +1040,12 @@ The package exports the following types for TypeScript users:
 import type {
   CreateCodespaceTaskRequest,
   CreateCodespaceTaskResponse,
+  CreateCodespaceTaskRequestV2,
+  CreateCodespaceTaskResponseV2,
   CreateBackgroundCodespaceTaskRequest,
   CreateBackgroundCodespaceTaskResponse,
   ModelApiKey,
+  Attachment,
   GetCodespaceTaskResponse,
   CodespaceTaskData,
   TechnicalDocument,
@@ -628,7 +1053,26 @@ import type {
   GetCodespaceTasksByProjectRequest,
   GetCodespaceTasksByProjectResponse,
   CodespaceTaskDetailedResponse,
+  CodespaceQuestionnaireRequest,
+  CodespaceQuestionnaireResponse,
+  GetRelatedCodespaceTasksRequest,
+  CodespaceTasksListResponse,
+  CodespaceTaskInDBWithModel,
+  AttachmentResponse,
+  CodespaceTaskModelInDB,
+  GetCodespaceModelsQuery,
+  GetCodespaceModelsResponse,
+  GetCodespaceModelResponse,
+  GetLLMModelProvidersResponse,
+  GetLLMModelProviderResponse,
+  GetModelsByProviderResponse,
 } from '@codeguide/core'
 ```
+
+## Related Documentation
+
+- [Codespace Models](./codespace-models.md) - Detailed documentation on codespace models and providers
+- [Projects Service](./projects-service.md) - Project management
+- [CodeGuide Client](./codeguide-client.md) - Client initialization
 
 For more information, visit the [API documentation](https://docs.codeguide.dev) or check the [GitHub repository](https://github.com/codeguide/cli).

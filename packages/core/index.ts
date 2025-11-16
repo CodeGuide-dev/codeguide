@@ -18,7 +18,7 @@ export type {
   ProjectRepository,
   GetProjectsRequest,
   PaginatedProjectsRequest,
-  PaginatedProjectsResponse
+  PaginatedProjectsResponse,
 } from './services/projects/project-types'
 export type {
   CreateCodespaceTaskRequestV2 as CreateCodespaceTaskRequest,
@@ -30,7 +30,7 @@ export type {
   GetCodespaceTaskResponse,
   CodespaceTaskData,
   TechnicalDocument,
-  GetProjectTasksByCodespaceResponse
+  GetProjectTasksByCodespaceResponse,
 } from './services/codespace/codespace-types'
 
 // Export commonly used external tokens types for convenience
@@ -44,5 +44,13 @@ export type {
   FindBestMatchRequest,
   FindBestMatchResponse,
   Platform,
-  TokenType
+  TokenType,
 } from './services/external-tokens/external-tokens-types'
+
+// Export commonly used starter kits types for convenience
+export type {
+  StarterKit,
+  StarterKitMetadata,
+  GetStarterKitsRequest,
+  GetStarterKitsResponse,
+} from './services/starter-kits/starter-kits-types'

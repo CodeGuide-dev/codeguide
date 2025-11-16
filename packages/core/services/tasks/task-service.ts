@@ -173,4 +173,14 @@ export class TaskService extends BaseService {
   async updateTask(taskId: string, request: UpdateTaskRequest): Promise<UpdateTaskResponse> {
     return this.put<UpdateTaskResponse>(`/project-tasks/${taskId}`, request)
   }
+
+  // Get Project Tasks by Codespace
+  async getProjectTasksbyCodespace(codespaceTaskId: string): Promise<ProjectTaskListResponse> {
+    if (!codespaceTaskId) {
+      throw new Error('Codespace task ID is required')
+    }
+
+    const url = `/project-tasks/by-codespace/${codespaceTaskId}`
+    return this.get<ProjectTaskListResponse>(url)
+  }
 }

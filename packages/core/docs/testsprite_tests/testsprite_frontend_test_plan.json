@@ -1,0 +1,390 @@
+[
+  {
+    "id": "TC001",
+    "title": "Homepage Load and Hero Section Display",
+    "description": "Verify that the homepage loads within acceptable time and displays the hero section including quick start guidance and feature highlights correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the homepage URL"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the page loads within 2 seconds on a standard broadband connection"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the hero section is visible and contains quick start guide and feature highlights"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Sidebar Navigation Expand/Collapse Functionality",
+    "description": "Validate that the hierarchical sidebar navigation expands and collapses correctly and routes to the correct documentation pages.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Locate the sidebar navigation"
+      },
+      {
+        "type": "action",
+        "description": "Click on a collapsible section in the sidebar"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the section expands showing nested links"
+      },
+      {
+        "type": "action",
+        "description": "Click on a nested documentation topic link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify navigation to the correct documentation page and active page highlighting in the sidebar"
+      },
+      {
+        "type": "action",
+        "description": "Click the same collapsible section to collapse it"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the section collapses hiding nested links"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Full-Text Local Search with Keyboard Shortcut",
+    "description": "Ensure the full-text search is accessible via keyboard shortcut Ctrl/Cmd+K, returns accurate results, and highlights matching terms.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load any documentation page"
+      },
+      {
+        "type": "action",
+        "description": "Press Ctrl+K (or Cmd+K on Mac) to open search"
+      },
+      {
+        "type": "assertion",
+        "description": "Search input is focused and visible"
+      },
+      {
+        "type": "action",
+        "description": "Enter a relevant search query that exists in markdown content"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify search results are returned and include documents containing the query"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that query terms are highlighted in the search results"
+      },
+      {
+        "type": "action",
+        "description": "Navigate the search results using keyboard arrows"
+      },
+      {
+        "type": "assertion",
+        "description": "Focused search result is visually distinct and can be selected via Enter key"
+      },
+      {
+        "type": "action",
+        "description": "Select a search result"
+      },
+      {
+        "type": "assertion",
+        "description": "User is navigated to the correct documentation page with query highlights present"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Dark Mode Toggle and Persistence",
+    "description": "Verify that the dark mode toggle works, respects system theme detection on initial load, and persists user choice across sessions.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load the documentation site with system theme set to light mode"
+      },
+      {
+        "type": "assertion",
+        "description": "Site loads in light mode by default"
+      },
+      {
+        "type": "action",
+        "description": "Manually enable dark mode using toggle"
+      },
+      {
+        "type": "assertion",
+        "description": "Site switches to dark mode appearance immediately"
+      },
+      {
+        "type": "action",
+        "description": "Refresh the page"
+      },
+      {
+        "type": "assertion",
+        "description": "Dark mode remains enabled after refresh"
+      },
+      {
+        "type": "action",
+        "description": "Set system theme to dark and clear local preference"
+      },
+      {
+        "type": "action",
+        "description": "Reload the site"
+      },
+      {
+        "type": "assertion",
+        "description": "Site loads in dark mode automatically respecting system preference"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Mobile Responsiveness and Touch Navigation",
+    "description": "Check the documentation site's responsiveness on various mobile screen sizes and verify touch-friendly navigation usability.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load the site on viewport sizes ranging from 320px to 768px width"
+      },
+      {
+        "type": "assertion",
+        "description": "Layout adjusts correctly to mobile screen sizes without horizontal scrolling"
+      },
+      {
+        "type": "action",
+        "description": "Open the mobile navigation menu using touch or tap"
+      },
+      {
+        "type": "assertion",
+        "description": "Mobile navigation menu opens smoothly and sections can be expanded or collapsed"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to multiple pages via mobile navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Navigation is fluid and pages load correctly without errors"
+      },
+      {
+        "type": "action",
+        "description": "Test scrolling and tap interactions within the content area"
+      },
+      {
+        "type": "assertion",
+        "description": "Touch events respond correctly and user experience is smooth"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "GitHub Integration 'Edit this page' Links",
+    "description": "Verify that all 'Edit this page' links correctly direct to the corresponding markdown file on GitHub repository.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to multiple documentation pages"
+      },
+      {
+        "type": "action",
+        "description": "Locate the 'Edit this page on GitHub' link"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the link URL corresponds to the correct markdown file path in GitHub repository"
+      },
+      {
+        "type": "action",
+        "description": "Click the edit link"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify redirection to GitHub with the editable markdown file open"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Syntax Highlighting and Code Copy Functionality",
+    "description": "Ensure TypeScript and JavaScript code samples have syntax highlighting with line numbers and copy-to-clipboard button functions correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open various pages containing TypeScript and JavaScript code samples"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify syntax highlighting is applied correctly with appropriate color and style"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that line numbers are visible for code blocks"
+      },
+      {
+        "type": "action",
+        "description": "Click on the copy-to-clipboard button on a code block"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm code content is copied to clipboard successfully"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Auto-Generated Table of Contents Accuracy",
+    "description": "Verify the table of contents is auto-generated correctly based on page headings and links navigate to correct sections.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open documentation pages with multiple heading levels"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that the table of contents reflects all headings hierarchically"
+      },
+      {
+        "type": "action",
+        "description": "Click table of contents entries"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page scrolls to the correct heading section"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "SEO and Content Discoverability Verification",
+    "description": "Ensure that pages include proper meta tags, titles, descriptions, and structured content to meet SEO standards.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Inspect multiple documentation page source code"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify presence of relevant meta title and meta description tags"
+      },
+      {
+        "type": "assertion",
+        "description": "Check structured markup such as schema.org or open graph tags where applicable"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm URLs are semantic and user-friendly"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Accessibility Compliance WCAG AA",
+    "description": "Validate documentation site accessibility with keyboard navigation, color contrast, and screen reader compatibility to meet WCAG AA standards.",
+    "category": "accessibility",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate through the site using keyboard only (Tab, Shift+Tab, Enter, arrow keys)"
+      },
+      {
+        "type": "assertion",
+        "description": "Focus order follows logical reading order and interactive elements are reachable"
+      },
+      {
+        "type": "assertion",
+        "description": "All text and UI elements meet color contrast ratio requirements"
+      },
+      {
+        "type": "action",
+        "description": "Use a screen reader to navigate main sections of the documentation site"
+      },
+      {
+        "type": "assertion",
+        "description": "Content is read correctly with meaningful alt texts and ARIA labels where applicable"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Local Development Workflow Build and Hot Reload",
+    "description": "Verify that local content edits in markdown files are reflected immediately via hot module replacement and that the site builds without errors.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start local development server with hot reload enabled"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm server starts without build errors"
+      },
+      {
+        "type": "action",
+        "description": "Modify a markdown file used in documentation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify changes appear immediately in the local preview via hot reload without full page refresh"
+      },
+      {
+        "type": "action",
+        "description": "Stop the development server and run full build process"
+      },
+      {
+        "type": "assertion",
+        "description": "No build errors occur and static assets are generated successfully"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Performance Metrics Compliance",
+    "description": "Ensure the documentation site meets performance targets such as First Contentful Paint (FCP) under 1.5 seconds and Cumulative Layout Shift (CLS) below 0.1.",
+    "category": "performance",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open homepage and select various documentation pages"
+      },
+      {
+        "type": "assertion",
+        "description": "Measure FCP and confirm it is less than 1.5 seconds"
+      },
+      {
+        "type": "assertion",
+        "description": "Measure CLS and verify it is below 0.1"
+      },
+      {
+        "type": "assertion",
+        "description": "Page loads fully within 2 seconds on standard broadband"
+      }
+    ]
+  }
+]

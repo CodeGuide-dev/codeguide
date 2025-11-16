@@ -238,6 +238,11 @@ export abstract class BaseService {
     return response.data
   }
 
+  protected async patch<T>(url: string, data?: any, config?: any): Promise<T> {
+    const response = await this.client.patch<T>(url, data, config)
+    return response.data
+  }
+
   protected async delete<T>(url: string, config?: any): Promise<T> {
     const response = await this.client.delete<T>(url, config)
     return response.data
@@ -245,5 +250,130 @@ export abstract class BaseService {
 
   protected buildUrl(endpoint: string): string {
     return endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+  }
+
+  /**
+   * Create a streaming connection for Server-Sent Events (SSE)
+   *
+   * @param url - The endpoint URL for streaming
+   * @param config - Optional configuration for the stream request
+   * @returns Promise that resolves to EventSource for SSE streaming
+   */
+  protected async createStream(url: string, config?: any): Promise<EventSource> {
+    // Build full URL
+    const fullUrl = `${this.client.defaults.baseURL}${this.buildUrl(url)}`
+
+    // For SSE, we need to use EventSource API directly
+    // However, we need to handle authentication differently since EventSource doesn't support custom headers
+    // We'll pass auth info as query parameters for SSE endpoints
+
+    return new Promise((resolve, reject) => {
+      try {
+        const eventSource = new EventSource(fullUrl)
+        resolve(eventSource)
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  /**
+   * Alternative streaming method using fetch for environments where EventSource is not available
+   * or when custom headers are needed for authentication
+   *
+   * @param url - The endpoint URL for streaming
+   * @param onMessage - Callback function for handling stream messages
+   * @param onError - Callback function for handling stream errors
+   * @param onComplete - Callback function for when stream completes
+   * @param config - Optional configuration for the stream request
+   * @returns Promise that resolves to a cleanup function
+   */
+  protected async createStreamWithFetch(
+    url: string,
+    onMessage: (data: any) => void,
+    onError?: (error: any) => void,
+    onComplete?: () => void,
+    config?: any
+  ): Promise<() => void> {
+    const streamConfig = {
+      ...config,
+      headers: {
+        ...this.client.defaults.headers,
+        'Accept': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        ...config?.headers,
+      },
+    }
+
+    const fullUrl = `${this.client.defaults.baseURL}${this.buildUrl(url)}`
+
+    try {
+      const response = await fetch(fullUrl, streamConfig)
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('Response body is not readable')
+      }
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      const processStream = async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+
+            if (done) {
+              onComplete?.()
+              break
+            }
+
+            buffer += decoder.decode(value, { stream: true })
+            const lines = buffer.split('\n')
+            buffer = lines.pop() || '' // Keep incomplete line in buffer
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6) // Remove 'data: ' prefix
+                if (data.trim()) {
+                  try {
+                    const parsedData = JSON.parse(data)
+                    onMessage(parsedData)
+                  } catch (parseError) {
+                    console.warn('Failed to parse SSE data:', data, parseError)
+                  }
+                }
+              } else if (line.startsWith('event: ')) {
+                const eventType = line.slice(7) // Remove 'event: ' prefix
+                // Handle different event types if needed
+                if (eventType === 'complete') {
+                  onComplete?.()
+                  return
+                } else if (eventType === 'error') {
+                  onError?.(new Error('Stream error event received'))
+                  return
+                }
+              }
+            }
+          }
+        } catch (error) {
+          onError?.(error)
+        }
+      }
+
+      processStream()
+
+      // Return cleanup function
+      return () => {
+        reader.cancel().catch(console.warn)
+      }
+    } catch (error) {
+      onError?.(error)
+      return () => {} // Return empty cleanup function on error
+    }
   }
 }

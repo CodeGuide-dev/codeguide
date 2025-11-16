@@ -1,31 +1,50 @@
+
 export interface ProjectRepository {
   id: string
-  project_id: string
+  name: string
   repo_url: string
   branch: string
+  project_id: string
+  user_id: string
+  files_processed: number
+  total_characters: number
+  total_lines: number
+  total_files_found: number
+  total_directories: number
   author: string
-  name: string
-  connection_status: 'pending' | 'connected' | 'failed'
+  estimated_tokens: number
+  estimated_size_bytes: number
+  tree_structure?: string
   created_at: string
-  updated_at: string
 }
 
 export interface Project {
   id: string
   title: string
   description: string
-  user_id: string
+  status: string
+  category_id: string
+  starter_kit_id?: string
+  ai_questionaire?: {
+    experience_level?: string
+    timeline?: string
+    team_size?: number
+  }
+  tools_selected?: string[]
+  project_outline?: {
+    features?: string[]
+    architecture?: string
+  }
+  codie_tool_id?: string
+  existing_project_repo_url?: string | null
   created_at: string
   updated_at: string
+  user_id: string
   project_documents: ProjectDocument[]
-  project_repositories: ProjectRepository[]
   category?: Category
+  starter_kit?: StarterKitReference
   codie_tool?: CodieTool
-  github_url?: string
-  status?: string
-  tools_selected?: string[]
-  ai_questionaire?: Record<string, any>
-  project_outline?: Record<string, any>
+  project_repositories: ProjectRepository[]
 }
 
 export interface ProjectDocument {
@@ -56,37 +75,62 @@ export interface GetProjectDocumentsResponse {
 export interface Category {
   id: string
   name: string
-  description?: string
+  description: string
 }
 
 export interface CodieTool {
   id: string
   name: string
-  description?: string
-  category?: string
+  description: string
+  type: string
+  api_endpoint?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface StarterKitReference {
+  id: string
+  name: string
+  description: string
 }
 
 export interface CreateProjectRequest {
   title: string
   description: string
   category_id?: string
-  codie_tool_id?: string
+  starter_kit_id?: string
+  ai_questionaire?: {
+    experience_level?: string
+    timeline?: string
+    team_size?: number
+  }
   tools_selected?: string[]
-  ai_questionaire?: Record<string, any>
-  project_outline?: Record<string, any>
-  github_url?: string
+  project_outline?: {
+    features?: string[]
+    architecture?: string
+  }
+  codie_tool_id?: string
+  existing_project_repo_url?: string
 }
 
 export interface UpdateProjectRequest {
   title?: string
   description?: string
-  category_id?: string
-  codie_tool_id?: string
-  tools_selected?: string[]
-  ai_questionaire?: Record<string, any>
-  project_outline?: Record<string, any>
-  github_url?: string
   status?: string
+  category_id?: string
+  starter_kit_id?: string
+  ai_questionaire?: {
+    experience_level?: string
+    timeline?: string
+    team_size?: number
+  }
+  tools_selected?: string[]
+  project_outline?: {
+    features?: string[]
+    architecture?: string
+  }
+  codie_tool_id?: string
+  existing_project_repo_url?: string
 }
 
 export interface ProjectListResponse {
@@ -131,13 +175,6 @@ export interface ConnectRepositoryRequest {
 
 export interface ConnectRepositoryResponse {
   status: string
-  data: {
-    id: string
-    project_id: string
-    repo_url: string
-    branch: string
-    connection_status: 'pending' | 'connected' | 'failed'
-    created_at: string
-    updated_at: string
-  }
+  data: ProjectRepository
 }
+

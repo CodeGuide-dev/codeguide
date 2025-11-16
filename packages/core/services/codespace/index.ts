@@ -13,6 +13,8 @@ export type {
   CodespaceTaskData,
   TechnicalDocument,
   GetProjectTasksByCodespaceResponse,
+  CodespaceProjectTask,
+  CodespaceProjectTaskListResponse,
   CodespaceQuestionnaireRequest,
   CodespaceQuestionnaireResponse,
   // Codespace Models Types
@@ -25,5 +27,18 @@ export type {
   GetLLMModelProvidersResponse,
   GetLLMModelProviderResponse,
   GetModelsByProviderResponse,
-  CodespaceModelsError
+  CodespaceModelsError,
+  // Final Report Popup State Types
+  UpdateFinalReportPopupStateRequest,
+  UpdateFinalReportPopupStateResponse,
+  // Codespace Task Logs Types
+  GetCodespaceTaskLogsRequest,
+  CodespaceTaskLogsResponse,
+  StreamCodespaceTaskLogsRequest,
+  CodespaceTaskLog,
+  CodespaceLogType,
+  CodespaceLogStreamEvent,
+  // GET /tasks/by-codespace-id Types
+  GetTasksByCodespaceIdRequest,
+  GetTasksByCodespaceIdResponse
 } from './codespace-types'

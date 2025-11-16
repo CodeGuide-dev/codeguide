@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Usage Service provides methods to track usage, check credits, and retrieve authorization information for users.
+The Usage Service provides methods to track usage, check credits, retrieve authorization information, and access comprehensive dashboard analytics for users.
 
 ## Methods
 
@@ -321,6 +321,296 @@ interface PlanLimits {
     storage_gb: LimitInfo
     projects: LimitInfo
     collaborators: LimitInfo
+  }
+}
+```
+
+# Dashboard Analytics
+
+The Usage Service also provides comprehensive dashboard analytics endpoints for visualizing usage patterns, costs, and trends. All dashboard endpoints follow the `/usage/dashboard/*` pattern.
+
+## `getDashboardAnalytics(params?)`
+
+Retrieves comprehensive analytics data with daily breakdowns, trends, and top services for dashboard visualization.
+
+**Endpoint:** `GET /usage/dashboard/analytics`
+
+**Parameters:** `DashboardAnalyticsRequest` (optional)
+```typescript
+interface DashboardAnalyticsRequest {
+  period?: "7d" | "1w" | "1m" | "3m"    // Time period
+  start_date?: string                    // Custom start date (YYYY-MM-DD)
+  end_date?: string                      // Custom end date (YYYY-MM-DD)
+  service_type?: "docs" | "chat" | "codespace_task" | "api"
+}
+```
+
+**Returns:** `Promise<DashboardAnalyticsResponse>`
+
+**Response Structure:**
+```typescript
+interface DashboardAnalyticsResponse {
+  status: string
+  data: {
+    period: {
+      start: string
+      end: string
+      label: string
+    }
+    daily_usage: Array<{
+      date: string
+      credits_consumed: number
+      cost_usd: number
+      requests_count: number
+      average_credits_per_request: number
+    }>
+    totals: {
+      credits_consumed: number
+      cost_usd: number
+      requests_count: number
+    }
+    averages: {
+      daily_credits: number
+      daily_requests: number
+    }
+    trends: {
+      credits_consumed: number      // Percentage change
+      requests_count: number        // Percentage change
+    }
+    top_services: Array<{
+      service_type: string
+      credits_consumed: number
+      requests_count: number
+    }>
+  }
+}
+```
+
+**Example Usage:**
+```typescript
+// Get last 7 days analytics
+const analytics = await codeguide.usage.getDashboardAnalytics({ period: '7d' })
+
+// Get custom date range for docs service
+const docsAnalytics = await codeguide.usage.getDashboardAnalytics({
+  start_date: '2024-01-01',
+  end_date: '2024-01-31',
+  service_type: 'docs'
+})
+```
+
+## `getUsageDetails(params?)`
+
+Retrieves paginated individual usage records with filtering and sorting capabilities for detailed analysis.
+
+**Endpoint:** `GET /usage/dashboard/details`
+
+**Parameters:** `UsageDetailsRequest` (optional)
+```typescript
+interface UsageDetailsRequest {
+  period?: "7d" | "1w" | "1m" | "3m"
+  start_date?: string
+  end_date?: string
+  service_type?: "docs" | "chat" | "codespace_task" | "api"
+  page?: number                         // Default: 1
+  page_size?: number                    // Default: 50, Max: 100
+  sort_by?: "created_at" | "credits_consumed" | "cost_amount"  // Default: "created_at"
+  sort_order?: "asc" | "desc"           // Default: "desc"
+}
+```
+
+**Returns:** `Promise<UsageDetailsResponse>`
+
+**Response Structure:**
+```typescript
+interface UsageDetailsResponse {
+  status: string
+  data: Array<{
+    id: string
+    created_at: string
+    service_type: string
+    model_name: string
+    usage_type: string
+    units_consumed: number
+    credits_consumed: number
+    cost_amount: number | null
+  }>
+  pagination: {
+    page: number
+    page_size: number
+    total_count: number
+    total_pages: number
+    has_next: boolean
+    has_prev: boolean
+  }
+  filters: {
+    period: string | null
+    start_date: string | null
+    end_date: string | null
+    service_type: string | null
+  }
+}
+```
+
+**Example Usage:**
+```typescript
+// Get first page of usage details for last 7 days
+const details = await codeguide.usage.getUsageDetails({ period: '7d' })
+
+// Get page 2 with custom sorting
+const sortedDetails = await codeguide.usage.getUsageDetails({
+  period: '1m',
+  page: 2,
+  page_size: 25,
+  sort_by: 'credits_consumed',
+  sort_order: 'desc'
+})
+```
+
+## `getUsageSummary(params?)`
+
+Retrieves quick overview statistics for dashboard widgets, including current vs previous period comparisons and billing cycle information.
+
+**Endpoint:** `GET /usage/dashboard/summary`
+
+**Parameters:** `UsageSummaryRequest` (optional)
+```typescript
+interface UsageSummaryRequest {
+  period?: "7d" | "1w" | "1m" | "3m"
+  start_date?: string
+  end_date?: string
+}
+```
+
+**Returns:** `Promise<UsageSummaryResponse>`
+
+**Response Structure:**
+```typescript
+interface UsageSummaryResponse {
+  status: string
+  data: {
+    current_period: {
+      credits_consumed: number
+      cost_usd: number
+      requests_count: number
+    }
+    previous_period: {
+      credits_consumed: number
+      cost_usd: number
+      requests_count: number
+    }
+    billing_cycle: {
+      total_allotted: number
+      total_consumed: number
+      remaining_credits: number
+    }
+    utilization_percentage: number
+    remaining_credits: number
+    daily_average: number
+    projected_monthly: number
+  }
+}
+```
+
+**Example Usage:**
+```typescript
+// Get summary for last 7 days
+const summary = await codeguide.usage.getUsageSummary({ period: '7d' })
+
+// Get monthly summary
+const monthlySummary = await codeguide.usage.getUsageSummary({ period: '1m' })
+```
+
+## `getServiceBreakdown(params?)`
+
+Retrieves usage breakdown by service type for pie charts and comparative analysis.
+
+**Endpoint:** `GET /usage/dashboard/services`
+
+**Parameters:** `ServiceBreakdownRequest` (optional)
+```typescript
+interface ServiceBreakdownRequest {
+  period?: "7d" | "1w" | "1m" | "3m"
+  start_date?: string
+  end_date?: string
+}
+```
+
+**Returns:** `Promise<ServiceBreakdownResponse>`
+
+**Response Structure:**
+```typescript
+interface ServiceBreakdownResponse {
+  status: string
+  data: {
+    period: {
+      start: string
+      end: string
+      label: string
+    }
+    services: Array<{
+      service_type: string
+      credits_consumed: number
+      percentage: number
+      cost_usd: number
+      requests_count: number
+      trend: number           // Percentage change
+    }>
+    total_credits: number
+    total_cost: number
+  }
+}
+```
+
+**Example Usage:**
+```typescript
+// Get service breakdown for last 7 days
+const breakdown = await codeguide.usage.getServiceBreakdown({ period: '7d' })
+
+// Get service breakdown for custom date range
+const customBreakdown = await codeguide.usage.getServiceBreakdown({
+  start_date: '2024-01-01',
+  end_date: '2024-01-31'
+})
+```
+
+## Complete Dashboard Example
+
+```typescript
+import { CodeGuide } from '@codeguide/core'
+
+const codeguide = new CodeGuide({
+  baseUrl: 'https://api.codeguide.app',
+  databaseApiKey: 'sk_your_key',
+})
+
+// Get comprehensive dashboard data
+async function loadDashboardData() {
+  try {
+    // Main analytics with trends
+    const analytics = await codeguide.usage.getDashboardAnalytics({ period: '7d' })
+
+    // Quick overview for widgets
+    const summary = await codeguide.usage.getUsageSummary({ period: '7d' })
+
+    // Service breakdown for pie charts
+    const services = await codeguide.usage.getServiceBreakdown({ period: '7d' })
+
+    // Detailed records for table
+    const details = await codeguide.usage.getUsageDetails({
+      period: '7d',
+      page_size: 100,
+      sort_by: 'credits_consumed',
+      sort_order: 'desc'
+    })
+
+    console.log('Dashboard Analytics:', analytics.data)
+    console.log('Summary Stats:', summary.data)
+    console.log('Service Breakdown:', services.data)
+    console.log('Usage Details:', details.data)
+
+  } catch (error) {
+    console.error('Failed to load dashboard data:', error)
   }
 }
 ```

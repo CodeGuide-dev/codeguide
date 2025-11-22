@@ -497,3 +497,36 @@ export type CodespaceLogStreamEvent =
   | StreamTimeoutEvent
   | StreamErrorEvent
 
+// ============================================================================
+// Project Summary Endpoint Types
+// ============================================================================
+
+// Request parameters for project codespace summary
+export interface GetCodespaceProjectSummaryRequest {
+  project_id: string
+}
+
+// Status summary interface
+export interface CodespaceStatusSummary {
+  pending: number
+  in_progress: number
+  completed: number
+  failed: number
+  blocked: number
+}
+
+// Response data structure for project summary
+export interface CodespaceProjectSummaryData {
+  project_id: string
+  total_codespace_tasks: number
+  status_summary: CodespaceStatusSummary
+  latest_task_created_at: string
+}
+
+// Response for project codespace summary endpoint
+export interface GetCodespaceProjectSummaryResponse {
+  status: string
+  data: CodespaceProjectSummaryData
+  message: string
+}
+

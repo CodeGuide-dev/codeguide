@@ -36,6 +36,9 @@ import {
   CodespaceTaskLogsResponse,
   StreamCodespaceTaskLogsRequest,
   CodespaceLogStreamEvent,
+  // Project Summary Types
+  GetCodespaceProjectSummaryRequest,
+  GetCodespaceProjectSummaryResponse,
 } from './codespace-types'
 
 export class CodespaceService extends BaseService {
@@ -105,6 +108,25 @@ export class CodespaceService extends BaseService {
 
     const url = `/codespace/tasks/project/${params.project_id}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     return this.get<GetCodespaceTasksByProjectResponse>(url)
+  }
+
+  /**
+   * Get aggregated statistics for all codespace tasks within a project
+   *
+   * GET /codespace/project/{project_id}/summary
+   *
+   * @param params - Request parameters including project_id
+   * @returns Promise resolving to aggregated task statistics by status
+   */
+  async getCodespaceProjectSummary(
+    params: GetCodespaceProjectSummaryRequest
+  ): Promise<GetCodespaceProjectSummaryResponse> {
+    if (!params.project_id) {
+      throw new Error('project_id is required')
+    }
+
+    const url = `/codespace/project/${params.project_id}/summary`
+    return this.get<GetCodespaceProjectSummaryResponse>(url)
   }
 
   async getCodespaceTaskDetailed(codespaceTaskId: string): Promise<CodespaceTaskDetailedResponse> {

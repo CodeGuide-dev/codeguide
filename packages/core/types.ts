@@ -136,8 +136,8 @@ export interface Product {
   id: string
   active: boolean
   name: string
-  description: string
-  image: string
+  description: string | null
+  image: string | null
   metadata: Record<string, any>
   marketing_features: string[]
   live_mode: boolean
@@ -172,6 +172,14 @@ export interface UserSubscriptionsResponse {
   data: Subscription[]
 }
 
+export interface SubscriptionProductsResponse {
+  status: string
+  data: Array<{
+    product: Product
+    prices: Price[]
+  }>
+}
+
 export interface CancelSubscriptionRequest {
   cancel_at_period_end: boolean
 }
@@ -180,6 +188,18 @@ export interface CancelSubscriptionResponse {
   status: string
   message: string
   data: Subscription
+}
+
+// Checkout Session Types
+export interface CreateCheckoutSessionRequest {
+  price_id: string
+  success_url: string
+  cancel_url: string
+}
+
+export interface CreateCheckoutSessionResponse {
+  status: string
+  checkout_url: string
 }
 
 // Cancellation Funnel Types

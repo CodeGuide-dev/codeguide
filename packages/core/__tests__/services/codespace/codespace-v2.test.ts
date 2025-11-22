@@ -3,6 +3,8 @@ import {
   CreateCodespaceTaskRequestV2,
   CreateBackgroundCodespaceTaskRequest,
   ModelApiKey,
+  GetCodespaceProjectSummaryRequest,
+  GetCodespaceProjectSummaryResponse,
 } from '../../../services/codespace/codespace-types'
 import { APIServiceConfig } from '../../../types'
 import axios from 'axios'
@@ -266,6 +268,57 @@ describe('CodespaceService - V2 Task Endpoints', () => {
 
       const result = await codespaceService.createBackgroundCodespaceTask(docsOnlyRequest)
       expect(result).toEqual(mockResponse)
+    })
+  })
+
+  describe('getCodespaceProjectSummary', () => {
+    it('should get project codespace summary successfully', async () => {
+      const request: GetCodespaceProjectSummaryRequest = {
+        project_id: 'project-123',
+      }
+
+      const mockResponse: GetCodespaceProjectSummaryResponse = {
+        status: 'success',
+        data: {
+          project_id: 'project-123',
+          total_codespace_tasks: 25,
+          status_summary: {
+            pending: 5,
+            in_progress: 8,
+            completed: 10,
+            failed: 2,
+            blocked: 0,
+          },
+          latest_task_created_at: '2025-11-16T10:30:00Z',
+        },
+        message: 'Retrieved summary for 25 codespace tasks in project project-123',
+      }
+
+      mockAxios.onGet('/codespace/project/project-123/summary').reply(200, mockResponse)
+
+      const result = await codespaceService.getCodespaceProjectSummary(request)
+
+      expect(result).toEqual(mockResponse)
+    })
+
+    it('should throw error when project_id is missing', async () => {
+      const invalidRequest = {} as GetCodespaceProjectSummaryRequest
+
+      await expect(
+        codespaceService.getCodespaceProjectSummary(invalidRequest)
+      ).rejects.toThrow('project_id is required')
+    })
+
+    it('should handle API errors properly', async () => {
+      const request: GetCodespaceProjectSummaryRequest = {
+        project_id: 'project-123',
+      }
+
+      mockAxios.onGet('/codespace/project/project-123/summary').reply(404, {
+        detail: 'Project not found',
+      })
+
+      await expect(codespaceService.getCodespaceProjectSummary(request)).rejects.toThrow()
     })
   })
 })

@@ -40,5 +40,10 @@ export type {
   CodespaceLogStreamEvent,
   // GET /tasks/by-codespace-id Types
   GetTasksByCodespaceIdRequest,
-  GetTasksByCodespaceIdResponse
+  GetTasksByCodespaceIdResponse,
+  // Project Summary Types
+  GetCodespaceProjectSummaryRequest,
+  GetCodespaceProjectSummaryResponse,
+  CodespaceStatusSummary,
+  CodespaceProjectSummaryData
 } from './codespace-types'

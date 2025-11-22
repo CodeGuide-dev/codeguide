@@ -4,11 +4,24 @@ import {
   UserSubscriptionsResponse,
   CancelSubscriptionRequest,
   CancelSubscriptionResponse,
+  SubscriptionProductsResponse,
+  CreateCheckoutSessionRequest,
+  CreateCheckoutSessionResponse,
 } from '../../types'
 
 export class SubscriptionService extends BaseService {
   constructor(config: any) {
     super(config)
+  }
+
+  /**
+   * Create a Stripe checkout session for subscription purchase
+   * POST /subscriptions/create-checkout-session
+   */
+  async createCheckoutSession(
+    request: CreateCheckoutSessionRequest
+  ): Promise<CreateCheckoutSessionResponse> {
+    return this.post<CreateCheckoutSessionResponse>('/subscriptions/create-checkout-session', request)
   }
 
   /**
@@ -28,6 +41,14 @@ export class SubscriptionService extends BaseService {
   }
 
   /**
+   * Get all available subscription products and their prices
+   * GET /subscriptions/products
+   */
+  async getSubscriptionProducts(): Promise<SubscriptionProductsResponse> {
+    return this.get<SubscriptionProductsResponse>('/subscriptions/products')
+  }
+
+  /**
    * Cancel subscription but keep it active until the end of the current billing period
    * POST /subscriptions/{subscription_id}/cancel
    */
@@ -35,10 +56,7 @@ export class SubscriptionService extends BaseService {
     subscriptionId: string,
     request: CancelSubscriptionRequest
   ): Promise<CancelSubscriptionResponse> {
-    return this.post<CancelSubscriptionResponse>(
-      `/subscriptions/${subscriptionId}/cancel`,
-      request
-    )
+    return this.post<CancelSubscriptionResponse>(`/subscriptions/${subscriptionId}/cancel`, request)
   }
 
   /**

@@ -45,7 +45,6 @@ export interface CreditCheckResponse {
   model_key: string
 }
 
-
 export interface CreditBalance {
   total_allotted: number
   total_consumed: number
@@ -161,15 +160,15 @@ export interface TrackCodespaceUsageResponse {
   created_at: string
 }
 
+export interface CodespaceTaskUsageData {
+  total_records: number
+  total_credits_consumed: number
+  latest_usage: string
+}
+
 export interface CodespaceTaskUsageResponse {
-  codespace_task_id: string
-  total_usage: {
-    total_input_tokens: number
-    total_output_tokens: number
-    total_call_seconds: number
-    total_cost: number
-  }
-  usage_records: TrackCodespaceUsageResponse[]
+  status: string
+  data: CodespaceTaskUsageData
 }
 
 export interface HealthResponse {
@@ -179,10 +178,10 @@ export interface HealthResponse {
 }
 
 // Dashboard Analytics Types
-export type PeriodType = "7d" | "1w" | "1m" | "3m"
-export type ServiceType = "docs" | "chat" | "codespace_task" | "api"
-export type SortOrder = "asc" | "desc"
-export type SortByField = "created_at" | "credits_consumed" | "cost_amount"
+export type PeriodType = '7d' | '1w' | '1m' | '3m'
+export type ServiceType = 'docs' | 'chat' | 'codespace_task' | 'api'
+export type SortOrder = 'asc' | 'desc'
+export type SortByField = 'created_at' | 'credits_consumed' | 'cost_amount'
 
 export interface DashboardAnalyticsRequest {
   period?: PeriodType

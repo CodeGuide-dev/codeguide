@@ -146,9 +146,7 @@ describe('UsageService', () => {
         model_key: 'gpt-4',
       }
 
-      mockAxios
-        .onGet('/usage/credit-check?model_key=gpt-4&input_tokens=100')
-        .reply(200, response)
+      mockAxios.onGet('/usage/credit-check?model_key=gpt-4&input_tokens=100').reply(200, response)
 
       const result = await usageService.checkCredits(params)
 
@@ -156,7 +154,6 @@ describe('UsageService', () => {
     })
   })
 
-  
   describe('getAuthorization', () => {
     it('should get authorization info successfully', async () => {
       const response: AuthorizationResponse = {
@@ -417,26 +414,12 @@ describe('UsageService', () => {
   describe('getCodespaceTaskUsage', () => {
     it('should get codespace task usage successfully', async () => {
       const response: CodespaceTaskUsageResponse = {
-        codespace_task_id: 'task123',
-        total_usage: {
-          total_input_tokens: 200,
-          total_output_tokens: 100,
-          total_call_seconds: 4,
-          total_cost: 0.1,
+        status: 'success',
+        data: {
+          total_records: 2,
+          total_credits_consumed: 49.428799,
+          latest_usage: '2025-11-24T07:50:58.150274+00:00',
         },
-        usage_records: [
-          {
-            id: 'usage123',
-            codespace_task_id: 'task123',
-            user_id: 'user123',
-            model_key: 'gpt-4',
-            input_tokens: 100,
-            output_tokens: 50,
-            call_seconds: 2,
-            cost_amount: 0.05,
-            created_at: '2024-01-01T00:00:00Z',
-          },
-        ],
       }
 
       mockAxios.onGet('/usage/codespace/task/task123').reply(200, response)
@@ -485,7 +468,7 @@ describe('UsageService', () => {
   describe('getDashboardAnalytics', () => {
     it('should get dashboard analytics with period parameter', async () => {
       const params: DashboardAnalyticsRequest = {
-        period: '7d'
+        period: '7d',
       }
 
       const response: DashboardAnalyticsResponse = {
@@ -494,7 +477,7 @@ describe('UsageService', () => {
           period: {
             start: '2024-01-25',
             end: '2024-01-31',
-            label: '7d'
+            label: '7d',
           },
           daily_usage: [
             {
@@ -502,30 +485,30 @@ describe('UsageService', () => {
               credits_consumed: 1250,
               cost_usd: 3.75,
               requests_count: 15,
-              average_credits_per_request: 83.33
-            }
+              average_credits_per_request: 83.33,
+            },
           ],
           totals: {
             credits_consumed: 13870,
             cost_usd: 41.61,
-            requests_count: 142
+            requests_count: 142,
           },
           averages: {
             daily_credits: 1981.43,
-            daily_requests: 20.29
+            daily_requests: 20.29,
           },
           trends: {
             credits_consumed: 15.7,
-            requests_count: 8.3
+            requests_count: 8.3,
           },
           top_services: [
             {
               service_type: 'docs',
               credits_consumed: 5230,
-              requests_count: 58
-            }
-          ]
-        }
+              requests_count: 58,
+            },
+          ],
+        },
       }
 
       mockAxios.onGet('/usage/dashboard/analytics?period=7d').reply(200, response)
@@ -539,7 +522,7 @@ describe('UsageService', () => {
       const params: DashboardAnalyticsRequest = {
         start_date: '2024-01-01',
         end_date: '2024-01-31',
-        service_type: 'docs'
+        service_type: 'docs',
       }
 
       const response: DashboardAnalyticsResponse = {
@@ -548,33 +531,37 @@ describe('UsageService', () => {
           period: {
             start: '2024-01-01',
             end: '2024-01-31',
-            label: 'custom'
+            label: 'custom',
           },
           daily_usage: [],
           totals: {
             credits_consumed: 5000,
             cost_usd: 15.0,
-            requests_count: 45
+            requests_count: 45,
           },
           averages: {
             daily_credits: 161.29,
-            daily_requests: 1.45
+            daily_requests: 1.45,
           },
           trends: {
             credits_consumed: 12.5,
-            requests_count: 5.2
+            requests_count: 5.2,
           },
           top_services: [
             {
               service_type: 'docs',
               credits_consumed: 5000,
-              requests_count: 45
-            }
-          ]
-        }
+              requests_count: 45,
+            },
+          ],
+        },
       }
 
-      mockAxios.onGet('/usage/dashboard/analytics?start_date=2024-01-01&end_date=2024-01-31&service_type=docs').reply(200, response)
+      mockAxios
+        .onGet(
+          '/usage/dashboard/analytics?start_date=2024-01-01&end_date=2024-01-31&service_type=docs'
+        )
+        .reply(200, response)
 
       const result = await usageService.getDashboardAnalytics(params)
 
@@ -588,24 +575,24 @@ describe('UsageService', () => {
           period: {
             start: '2024-01-01',
             end: '2024-01-07',
-            label: '7d'
+            label: '7d',
           },
           daily_usage: [],
           totals: {
             credits_consumed: 1000,
             cost_usd: 3.0,
-            requests_count: 10
+            requests_count: 10,
           },
           averages: {
             daily_credits: 142.86,
-            daily_requests: 1.43
+            daily_requests: 1.43,
           },
           trends: {
             credits_consumed: 5.0,
-            requests_count: 2.0
+            requests_count: 2.0,
           },
-          top_services: []
-        }
+          top_services: [],
+        },
       }
 
       mockAxios.onGet('/usage/dashboard/analytics').reply(200, response)
@@ -622,7 +609,7 @@ describe('UsageService', () => {
         page: 1,
         page_size: 25,
         sort_by: 'credits_consumed',
-        sort_order: 'desc'
+        sort_order: 'desc',
       }
 
       const response: UsageDetailsResponse = {
@@ -636,8 +623,8 @@ describe('UsageService', () => {
             usage_type: 'output_tokens',
             units_consumed: 1250,
             credits_consumed: 156,
-            cost_amount: 0.468
-          }
+            cost_amount: 0.468,
+          },
         ],
         pagination: {
           page: 1,
@@ -645,17 +632,21 @@ describe('UsageService', () => {
           total_count: 142,
           total_pages: 6,
           has_next: true,
-          has_prev: false
+          has_prev: false,
         },
         filters: {
           period: null,
           start_date: null,
           end_date: null,
-          service_type: null
-        }
+          service_type: null,
+        },
       }
 
-      mockAxios.onGet('/usage/dashboard/details?page=1&page_size=25&sort_by=credits_consumed&sort_order=desc').reply(200, response)
+      mockAxios
+        .onGet(
+          '/usage/dashboard/details?page=1&page_size=25&sort_by=credits_consumed&sort_order=desc'
+        )
+        .reply(200, response)
 
       const result = await usageService.getUsageDetails(params)
 
@@ -665,7 +656,7 @@ describe('UsageService', () => {
     it('should get usage details with filtering parameters', async () => {
       const params: UsageDetailsRequest = {
         period: '1m',
-        service_type: 'chat'
+        service_type: 'chat',
       }
 
       const response: UsageDetailsResponse = {
@@ -679,8 +670,8 @@ describe('UsageService', () => {
             usage_type: 'input_tokens',
             units_consumed: 890,
             credits_consumed: 89,
-            cost_amount: null
-          }
+            cost_amount: null,
+          },
         ],
         pagination: {
           page: 1,
@@ -688,14 +679,14 @@ describe('UsageService', () => {
           total_count: 25,
           total_pages: 1,
           has_next: false,
-          has_prev: false
+          has_prev: false,
         },
         filters: {
           period: '1m',
           start_date: null,
           end_date: null,
-          service_type: 'chat'
-        }
+          service_type: 'chat',
+        },
       }
 
       mockAxios.onGet('/usage/dashboard/details?period=1m&service_type=chat').reply(200, response)
@@ -709,7 +700,7 @@ describe('UsageService', () => {
   describe('getUsageSummary', () => {
     it('should get usage summary dashboard with period parameter', async () => {
       const params = {
-        period: '7d' as const
+        period: '7d' as const,
       }
 
       const response: UsageSummaryResponse = {
@@ -718,23 +709,23 @@ describe('UsageService', () => {
           current_period: {
             credits_consumed: 13870,
             cost_usd: 41.61,
-            requests_count: 142
+            requests_count: 142,
           },
           previous_period: {
             credits_consumed: 11990,
             cost_usd: 35.97,
-            requests_count: 131
+            requests_count: 131,
           },
           billing_cycle: {
             total_allotted: 50000,
             total_consumed: 28450,
-            remaining_credits: 21550
+            remaining_credits: 21550,
           },
           utilization_percentage: 56.9,
           remaining_credits: 21550,
           daily_average: 1981.43,
-          projected_monthly: 59443
-        }
+          projected_monthly: 59443,
+        },
       }
 
       mockAxios.onGet('/usage/dashboard/summary?period=7d').reply(200, response)
@@ -747,7 +738,7 @@ describe('UsageService', () => {
     it('should get usage summary dashboard with custom date range', async () => {
       const params = {
         start_date: '2024-01-01',
-        end_date: '2024-01-31'
+        end_date: '2024-01-31',
       }
 
       const response: UsageSummaryResponse = {
@@ -756,26 +747,28 @@ describe('UsageService', () => {
           current_period: {
             credits_consumed: 25000,
             cost_usd: 75.0,
-            requests_count: 300
+            requests_count: 300,
           },
           previous_period: {
             credits_consumed: 22000,
             cost_usd: 66.0,
-            requests_count: 275
+            requests_count: 275,
           },
           billing_cycle: {
             total_allotted: 50000,
             total_consumed: 47000,
-            remaining_credits: 3000
+            remaining_credits: 3000,
           },
           utilization_percentage: 94.0,
           remaining_credits: 3000,
           daily_average: 806.45,
-          projected_monthly: 25000
-        }
+          projected_monthly: 25000,
+        },
       }
 
-      mockAxios.onGet('/usage/dashboard/summary?start_date=2024-01-01&end_date=2024-01-31').reply(200, response)
+      mockAxios
+        .onGet('/usage/dashboard/summary?start_date=2024-01-01&end_date=2024-01-31')
+        .reply(200, response)
 
       const result = await usageService.getUsageSummary(params)
 
@@ -786,7 +779,7 @@ describe('UsageService', () => {
   describe('getServiceBreakdown', () => {
     it('should get service breakdown with period parameter', async () => {
       const params: ServiceBreakdownRequest = {
-        period: '7d'
+        period: '7d',
       }
 
       const response: ServiceBreakdownResponse = {
@@ -795,7 +788,7 @@ describe('UsageService', () => {
           period: {
             start: '2024-01-25',
             end: '2024-01-31',
-            label: '7d'
+            label: '7d',
           },
           services: [
             {
@@ -804,7 +797,7 @@ describe('UsageService', () => {
               percentage: 37.71,
               cost_usd: 15.69,
               requests_count: 58,
-              trend: 12.5
+              trend: 12.5,
             },
             {
               service_type: 'chat',
@@ -812,12 +805,12 @@ describe('UsageService', () => {
               percentage: 29.71,
               cost_usd: 12.36,
               requests_count: 47,
-              trend: -5.2
-            }
+              trend: -5.2,
+            },
           ],
           total_credits: 13870,
-          total_cost: 41.61
-        }
+          total_cost: 41.61,
+        },
       }
 
       mockAxios.onGet('/usage/dashboard/services?period=7d').reply(200, response)
@@ -830,7 +823,7 @@ describe('UsageService', () => {
     it('should get service breakdown with custom date range', async () => {
       const params: ServiceBreakdownRequest = {
         start_date: '2024-01-01',
-        end_date: '2024-01-31'
+        end_date: '2024-01-31',
       }
 
       const response: ServiceBreakdownResponse = {
@@ -839,7 +832,7 @@ describe('UsageService', () => {
           period: {
             start: '2024-01-01',
             end: '2024-01-31',
-            label: 'custom'
+            label: 'custom',
           },
           services: [
             {
@@ -848,15 +841,17 @@ describe('UsageService', () => {
               percentage: 60.0,
               cost_usd: 45.0,
               requests_count: 25,
-              trend: 28.4
-            }
+              trend: 28.4,
+            },
           ],
           total_credits: 25000,
-          total_cost: 75.0
-        }
+          total_cost: 75.0,
+        },
       }
 
-      mockAxios.onGet('/usage/dashboard/services?start_date=2024-01-01&end_date=2024-01-31').reply(200, response)
+      mockAxios
+        .onGet('/usage/dashboard/services?start_date=2024-01-01&end_date=2024-01-31')
+        .reply(200, response)
 
       const result = await usageService.getServiceBreakdown(params)
 
@@ -870,21 +865,21 @@ describe('UsageService', () => {
           period: {
             start: '2024-01-01',
             end: '2024-01-07',
-            label: '7d'
+            label: '7d',
           },
           services: [
             {
               service_type: 'api',
               credits_consumed: 700,
               percentage: 100.0,
-              cost_usd: 2.10,
+              cost_usd: 2.1,
               requests_count: 5,
-              trend: 0.0
-            }
+              trend: 0.0,
+            },
           ],
           total_credits: 700,
-          total_cost: 2.10
-        }
+          total_cost: 2.1,
+        },
       }
 
       mockAxios.onGet('/usage/dashboard/services').reply(200, response)

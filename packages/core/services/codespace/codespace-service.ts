@@ -167,7 +167,7 @@ export class CodespaceService extends BaseService {
       queryParams.append('sort_order', params.sort_order)
     }
 
-    const url = `/tasks/by-codespace-id/${params.codespace_task_id}${
+    const url = `/codespace/tasks/by-codespace-id/${params.codespace_task_id}${
       queryParams.toString() ? `?${queryParams.toString()}` : ''
     }`
 
@@ -215,7 +215,7 @@ export class CodespaceService extends BaseService {
   /**
    * Update the final report popup state for a codespace task
    *
-   * PATCH /task/{codespace_task_id}/final-report-popup-state
+   * PATCH /codespace/task/{codespace_task_id}/final-report-popup-state
    *
    * @param codespaceTaskId - The ID of the codespace task
    * @param request - The request body containing the new popup state
@@ -235,7 +235,7 @@ export class CodespaceService extends BaseService {
     }
 
     return this.patch<UpdateFinalReportPopupStateResponse>(
-      `/task/${codespaceTaskId}/final-report-popup-state`,
+      `/codespace/task/${codespaceTaskId}/final-report-popup-state`,
       request
     )
   }

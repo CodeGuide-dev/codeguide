@@ -1,6 +1,6 @@
 {
   "name": "@codeguide/core",
-  "version": "0.0.30",
+  "version": "0.0.32",
   "description": "Core package for code guidance with programmatic API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,6 +18,7 @@
     "test": "jest --config=jest.config.json",
     "test:watch": "jest --config=jest.config.json --watch",
     "test:coverage": "jest --config=jest.config.json --coverage",
+    "dev:link": "npm run build && npm link",
     "docs:dev": "cd docs && npm run dev",
     "docs:build": "cd docs && npm run build",
     "docs:preview": "cd docs && npm run preview",

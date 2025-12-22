@@ -179,7 +179,6 @@ export interface GetTasksByProjectResponse {
   }
 }
 
-
 export interface UpdateTaskRequest {
   status?: string
   ai_result?: string
@@ -193,4 +192,23 @@ export interface UpdateTaskResponse {
   data: {
     task: ProjectTask
   }
+}
+
+export interface GenerateTasksCustomBackgroundRequest {
+  project_id: string
+}
+
+export interface GenerateTasksCustomBackgroundResponse {
+  status: string
+  job_id: string
+  message: string
+}
+
+export interface GeneratePromptRequest {
+  additional_context?: string
+}
+
+export interface GeneratePromptResponse {
+  status: string
+  prompt: string
 }

@@ -20,6 +20,10 @@ import {
   GetTasksByProjectResponse,
   UpdateTaskRequest,
   UpdateTaskResponse,
+  GenerateTasksCustomBackgroundRequest,
+  GenerateTasksCustomBackgroundResponse,
+  GeneratePromptRequest,
+  GeneratePromptResponse,
 } from './task-types'
 
 export class TaskService extends BaseService {
@@ -84,7 +88,10 @@ export class TaskService extends BaseService {
         })
         taskGroup = updateResponse
       } catch (error) {
-        console.warn('Failed to create codespace task, but task group was created successfully:', error)
+        console.warn(
+          'Failed to create codespace task, but task group was created successfully:',
+          error
+        )
         // Continue without codespace task if it fails
       }
     }
@@ -93,7 +100,10 @@ export class TaskService extends BaseService {
   }
 
   async updateTaskGroup(taskGroupId: string, request: UpdateTaskGroupRequest): Promise<TaskGroup> {
-    const response = await this.put<TaskGroupResponse>(`/project-tasks/task-groups/${taskGroupId}`, request)
+    const response = await this.put<TaskGroupResponse>(
+      `/project-tasks/task-groups/${taskGroupId}`,
+      request
+    )
     return response.data
   }
 
@@ -158,6 +168,16 @@ export class TaskService extends BaseService {
     return this.post<GenerateTasksResponse>('/project-tasks/generate-tasks', request)
   }
 
+  // Generate Tasks Custom (Background)
+  async generateTasksCustomBackground(
+    request: GenerateTasksCustomBackgroundRequest
+  ): Promise<GenerateTasksCustomBackgroundResponse> {
+    return this.post<GenerateTasksCustomBackgroundResponse>(
+      '/project-tasks/generate-tasks-custom/background',
+      request
+    )
+  }
+
   // Get Tasks by Project
   async getTasksByProject(request: GetTasksByProjectRequest): Promise<GetTasksByProjectResponse> {
     const queryParams = new URLSearchParams()
@@ -182,5 +202,13 @@ export class TaskService extends BaseService {
 
     const url = `/project-tasks/by-codespace/${codespaceTaskId}`
     return this.get<ProjectTaskListResponse>(url)
+  }
+
+  // Generate Prompt for a Project Task
+  async generatePrompt(
+    taskId: string,
+    request: GeneratePromptRequest = {}
+  ): Promise<GeneratePromptResponse> {
+    return this.post<GeneratePromptResponse>(`/project-tasks/${taskId}/generate-prompt`, request)
   }
 }

@@ -49,7 +49,7 @@ export class ProjectService extends BaseService {
   }
 
   async createProject(request: CreateProjectRequest): Promise<Project> {
-    const response = await this.post<ProjectResponse>('/projects', request)
+    const response = await this.post<ProjectResponse>('/projects/', request)
     return response.data
   }
 
@@ -74,6 +74,13 @@ export class ProjectService extends BaseService {
 
     const url = `/projects/${projectId}/documents${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     return this.get<GetProjectDocumentsResponse>(url)
+  }
+
+  async getDocumentsByType(
+    projectId: string,
+    documentType: string
+  ): Promise<GetProjectDocumentsResponse> {
+    return this.get<GetProjectDocumentsResponse>(`/projects/${projectId}/documents/type/${documentType}`)
   }
 
   async connectRepository(

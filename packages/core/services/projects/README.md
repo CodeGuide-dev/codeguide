@@ -122,6 +122,60 @@ interface Project {
 }
 ```
 
+### Project Creation
+
+#### `CreateProjectRequest`
+
+```typescript
+interface CreateProjectRequest {
+  title?: string // Optional - will be auto-generated if not provided
+  description: string
+  status?: 'prompt' | 'draft' | 'in_progress' | 'completed'
+  category_id?: string
+  starter_kit_id?: string
+  ai_questionaire?: {
+    experience_level?: string
+    timeline?: string
+    team_size?: number
+  }
+  tools_selected?: string[]
+  project_outline?: {
+    features?: string[]
+    architecture?: string
+  }
+  codie_tool_id?: string
+  existing_project_repo_url?: string
+}
+```
+
+#### Automatic Title Generation
+
+The API now supports automatic title generation when creating projects without a title. The system generates titles using this priority order:
+
+1. **Project description** (highest priority)
+2. **AI questionnaire** responses
+3. **Project outline** information
+4. **"Untitled Project"** (fallback when no context is available)
+
+#### Usage Examples
+
+```typescript
+// Create project without title - API will auto-generate
+const newProject = await codeGuide.project.createProject({
+  description: "A todo app built with React and Node.js",
+  tools_selected: ["React", "Node.js", "MongoDB"]
+})
+
+// The API will generate a title like "React Node.js Todo Application"
+console.log(newProject.title) // Auto-generated title
+```
+
+#### Generated Title Examples
+
+- Input: "A todo app built with React and Node.js" → "React Node.js Todo Application"
+- Input: "Mobile banking app with biometric authentication" → "Mobile Banking App Biometric Authentication"
+- Empty description with questionnaire → "Untitled Project" (fallback)
+
 ## Usage Examples
 
 ### Basic Filtering

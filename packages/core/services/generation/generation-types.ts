@@ -65,6 +65,7 @@ export interface GenerateOutlineResponse {
 }
 
 export interface GenerateDocumentRequest {
+  project_id?: string
   project_type?: string
   description: string
   selected_tools: string[]
@@ -128,4 +129,12 @@ export interface GenerateMissingDocumentsResponse {
   message?: string
   error?: string
   generated_documents?: string[]
+}
+
+export interface GenerateTechSpecRequest {
+  project_id: string
+}
+
+export interface CustomDocumentResponse {
+  content: string
 }

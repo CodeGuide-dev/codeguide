@@ -95,8 +95,9 @@ export interface StarterKitReference {
 }
 
 export interface CreateProjectRequest {
-  title: string
+  title?: string // Optional - will be auto-generated if not provided
   description: string
+  status?: 'prompt' | 'draft' | 'in_progress' | 'completed'
   category_id?: string
   starter_kit_id?: string
   ai_questionaire?: {

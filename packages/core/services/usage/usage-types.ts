@@ -349,3 +349,104 @@ export interface ServiceBreakdownResponse {
   status: string
   data: ServiceBreakdownData
 }
+
+// Activity Heatmap Types (GitHub-style contribution graph)
+export type HeatmapPeriodType = '3m' | '6m' | '1y'
+export type ActivityLevel = 0 | 1 | 2 | 3 | 4
+
+export interface ActivityHeatmapRequest {
+  period?: HeatmapPeriodType
+  start_date?: string
+  end_date?: string
+}
+
+export interface HeatmapDayData {
+  date: string
+  count: number
+  level: ActivityLevel
+}
+
+export interface ActivityHeatmapData {
+  period: PeriodInfo
+  days: HeatmapDayData[]
+  total_tasks: number
+  most_active_day: string | null
+  max_daily_count: number
+  average_daily: number
+  active_days: number
+}
+
+export interface ActivityHeatmapResponse {
+  status: string
+  data: ActivityHeatmapData
+}
+
+// Repository Analysis Summary Types
+export type RepoAnalysisPeriodType = '7d' | '1w' | '1m' | '3m' | '6m' | '1y'
+
+export interface RepositoryAnalysisSummaryRequest {
+  period?: RepoAnalysisPeriodType
+  start_date?: string
+  end_date?: string
+}
+
+export interface RepositoryAnalysisSummaryData {
+  total_repositories: number
+  total_lines: number
+  total_files_processed: number
+  total_files_found: number
+  total_directories: number
+  total_characters: number
+  estimated_tokens_total: number
+  total_size_bytes: number
+  binary_files_skipped: number
+  large_files_skipped: number
+  encoding_errors: number
+  average_lines_per_repo: number
+  average_files_per_repo: number
+  period: PeriodInfo | null
+}
+
+export interface RepositoryAnalysisSummaryResponse {
+  status: string
+  data: RepositoryAnalysisSummaryData
+}
+
+// Repository Analysis Timeline Types
+export type TimelineGranularity = 'daily' | 'weekly' | 'monthly'
+
+export interface RepositoryAnalysisTimelineRequest {
+  period?: RepoAnalysisPeriodType
+  start_date?: string
+  end_date?: string
+  granularity?: TimelineGranularity
+}
+
+export interface RepositoryAnalysisTimelineItem {
+  date: string
+  repos_analyzed: number
+  total_lines: number
+  total_files: number
+  total_characters: number
+  estimated_tokens: number
+}
+
+export interface RepositoryAnalysisTimelineTotals {
+  repos_analyzed: number
+  total_lines: number
+  total_files: number
+  total_characters: number
+  estimated_tokens: number
+}
+
+export interface RepositoryAnalysisTimelineData {
+  period: PeriodInfo
+  granularity: TimelineGranularity
+  timeline: RepositoryAnalysisTimelineItem[]
+  totals: RepositoryAnalysisTimelineTotals
+}
+
+export interface RepositoryAnalysisTimelineResponse {
+  status: string
+  data: RepositoryAnalysisTimelineData
+}

@@ -21,6 +21,7 @@ export { ExternalTokenService } from './external-tokens'
 export { SecurityKeysService } from './security-keys'
 export { UserService } from './users'
 export { StarterKitsService } from './starter-kits'
+export { StreamingService } from './streaming'
 
 // Re-export all types for convenience
 export * from './generation'
@@ -36,3 +37,4 @@ export * from './external-tokens'
 export * from './security-keys'
 export * from './users'
 export * from './starter-kits'
+export * from './streaming'

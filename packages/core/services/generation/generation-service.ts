@@ -18,6 +18,8 @@ import {
   GenerateMultipleDocumentsResponse,
   GenerateMissingDocumentsRequest,
   GenerateMissingDocumentsResponse,
+  GenerateTechSpecRequest,
+  CustomDocumentResponse,
   BackgroundGenerationRequest,
   BackgroundGenerationResponse,
   BackgroundGenerationStatusResponse,
@@ -77,5 +79,9 @@ export class GenerationService extends BaseService {
 
   async getBackgroundGenerationStatus(jobId: string): Promise<BackgroundGenerationStatusResponse> {
     return this.get<BackgroundGenerationStatusResponse>(`/generate/background/${jobId}/status`)
+  }
+
+  async generateTechSpec(request: GenerateTechSpecRequest): Promise<CustomDocumentResponse> {
+    return this.post<CustomDocumentResponse>('/generate/tech-spec', request)
   }
 }

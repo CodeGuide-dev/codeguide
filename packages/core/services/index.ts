@@ -22,6 +22,7 @@ export { SecurityKeysService } from './security-keys'
 export { UserService } from './users'
 export { StarterKitsService } from './starter-kits'
 export { StreamingService } from './streaming'
+export { ChatService } from './chat'
 
 // Re-export all types for convenience
 export * from './generation'
@@ -38,3 +39,4 @@ export * from './security-keys'
 export * from './users'
 export * from './starter-kits'
 export * from './streaming'
+export * from './chat'

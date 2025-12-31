@@ -326,7 +326,7 @@ describe('UsageService', () => {
       expect(result.data.subscription).not.toBeNull()
       expect(result.data.subscription?.plan_name).toBe('Monthly Plan')
       expect(result.data.codespace_task_limit).toBeNull()
-      expect(result.data.plan_limits.limits.codespace_tasks.is_unlimited).toBe(true)
+      expect(result.data.plan_limits?.limits.codespace_tasks.is_unlimited).toBe(true)
     })
   })
 
@@ -706,25 +706,37 @@ describe('UsageService', () => {
       const response: UsageSummaryResponse = {
         status: 'success',
         data: {
-          current_period: {
+          period: {
+            start: '2024-01-25',
+            end: '2024-01-31',
+          },
+          usage: {
             credits_consumed: 13870,
             cost_usd: 41.61,
             requests_count: 142,
           },
-          previous_period: {
-            credits_consumed: 11990,
-            cost_usd: 35.97,
-            requests_count: 131,
+          breakdown: {
+            docs: 5230,
+            chat: 4120,
+            codespace_task: 4520,
           },
-          billing_cycle: {
-            total_allotted: 50000,
-            total_consumed: 28450,
-            remaining_credits: 21550,
-          },
-          utilization_percentage: 56.9,
-          remaining_credits: 21550,
-          daily_average: 1981.43,
-          projected_monthly: 59443,
+          service_breakdown: [
+            {
+              service_type: 'docs',
+              credits_consumed: 5230,
+              requests_count: 58,
+            },
+            {
+              service_type: 'chat',
+              credits_consumed: 4120,
+              requests_count: 47,
+            },
+            {
+              service_type: 'codespace_task',
+              credits_consumed: 4520,
+              requests_count: 37,
+            },
+          ],
         },
       }
 
@@ -744,25 +756,37 @@ describe('UsageService', () => {
       const response: UsageSummaryResponse = {
         status: 'success',
         data: {
-          current_period: {
+          period: {
+            start: '2024-01-01',
+            end: '2024-01-31',
+          },
+          usage: {
             credits_consumed: 25000,
             cost_usd: 75.0,
             requests_count: 300,
           },
-          previous_period: {
-            credits_consumed: 22000,
-            cost_usd: 66.0,
-            requests_count: 275,
+          breakdown: {
+            docs: 10000,
+            chat: 8000,
+            codespace_task: 7000,
           },
-          billing_cycle: {
-            total_allotted: 50000,
-            total_consumed: 47000,
-            remaining_credits: 3000,
-          },
-          utilization_percentage: 94.0,
-          remaining_credits: 3000,
-          daily_average: 806.45,
-          projected_monthly: 25000,
+          service_breakdown: [
+            {
+              service_type: 'docs',
+              credits_consumed: 10000,
+              requests_count: 120,
+            },
+            {
+              service_type: 'chat',
+              credits_consumed: 8000,
+              requests_count: 95,
+            },
+            {
+              service_type: 'codespace_task',
+              credits_consumed: 7000,
+              requests_count: 85,
+            },
+          ],
         },
       }
 

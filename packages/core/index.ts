@@ -19,6 +19,9 @@ export type {
   GetProjectsRequest,
   PaginatedProjectsRequest,
   PaginatedProjectsResponse,
+  AITool,
+  GetAiToolsRequest,
+  GetAiToolsResponse,
 } from './services/projects/project-types'
 export type {
   CreateCodespaceTaskRequestV2 as CreateCodespaceTaskRequest,

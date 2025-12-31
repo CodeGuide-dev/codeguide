@@ -12,6 +12,8 @@ import {
   GetProjectDocumentsResponse,
   ConnectRepositoryRequest,
   ConnectRepositoryResponse,
+  GetAiToolsRequest,
+  GetAiToolsResponse,
 } from './project-types'
 
 export class ProjectService extends BaseService {
@@ -116,5 +118,15 @@ export class ProjectService extends BaseService {
     if (request.github_token && !request.github_token.startsWith('ghp_') && !request.github_token.startsWith('gho_') && !request.github_token.startsWith('ghu_') && !request.github_token.startsWith('ghs_') && !request.github_token.startsWith('ghr_')) {
       throw new Error('GitHub token must be a valid personal access token')
     }
+  }
+
+  async getAiTools(params?: GetAiToolsRequest): Promise<GetAiToolsResponse> {
+    const queryParams = new URLSearchParams()
+
+    if (params?.key) queryParams.append('key', params.key)
+    if (params?.category) queryParams.append('category', params.category)
+
+    const url = `/ai-tools${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    return this.get<GetAiToolsResponse>(url)
   }
 }

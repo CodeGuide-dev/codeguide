@@ -51,8 +51,8 @@ export interface CreditBalance {
   remaining_credits: number
   is_over_limit: boolean
   utilization_percentage: number
-  billing_cycle_start: string
-  billing_cycle_end: string
+  billing_cycle_start?: string
+  billing_cycle_end?: string
 }
 
 export interface LimitInfo {
@@ -81,14 +81,14 @@ export interface PlanLimits {
 }
 
 export interface AuthorizationSubscription {
-  id: string
-  status: string
-  interval: string
-  current_period_start: string
-  current_period_end: string
-  price_id: string
-  product_name: string | null
-  plan_name: string
+  id?: string
+  status?: string
+  interval?: string
+  current_period_start?: string
+  current_period_end?: string
+  price_id?: string
+  product_name?: string | null
+  plan_name?: string
 }
 
 export interface AuthorizationData {
@@ -103,7 +103,7 @@ export interface AuthorizationData {
   can_create_tasks: boolean
   can_analyze_repos: boolean
   can_access_previous_projects: boolean
-  plan_limits: PlanLimits
+  plan_limits?: PlanLimits | null
   codespace_task_limit: LimitInfo | null
 }
 
@@ -291,34 +291,13 @@ export interface UsageSummaryRequest {
   end_date?: string
 }
 
-export interface CurrentPeriodUsage {
-  credits_consumed: number
-  cost_usd: number
-  requests_count: number
-}
-
-export interface PreviousPeriodUsage {
-  credits_consumed: number
-  cost_usd: number
-  requests_count: number
-}
-
-export interface BillingCycleInfo {
-  total_allotted: number
-  total_consumed: number
-  remaining_credits: number
-}
-
 export interface UsageSummaryResponse {
   status: string
   data: {
-    current_period: CurrentPeriodUsage
-    previous_period: PreviousPeriodUsage
-    billing_cycle: BillingCycleInfo
-    utilization_percentage: number
-    remaining_credits: number
-    daily_average: number
-    projected_monthly: number
+    period: { start?: string; end?: string }
+    usage: { [key: string]: number }
+    breakdown: { [key: string]: number }
+    service_breakdown: Array<{ service_type: string; [key: string]: any }>
   }
 }
 

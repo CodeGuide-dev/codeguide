@@ -138,3 +138,104 @@ export interface GenerateTechSpecRequest {
 export interface CustomDocumentResponse {
   content: string
 }
+
+export interface GenerateAnswersRequest {
+  title: string
+  description: string
+  questions: Array<{
+    question: string
+    answer: string
+  }>
+}
+
+export interface GenerateAnswersResponse {
+  answers: Array<{
+    question: string
+    answer: string
+  }>
+}
+
+export interface GenerateProjectOutlineRequest {
+  description: string
+  project_type: string
+  title?: string
+  selected_tools?: string[]
+  answers?: Record<string, any>
+  project_id?: string
+  category_id?: string
+}
+
+export interface GenerateProjectOutlineResponse {
+  outline: string
+  project_id: string
+  project_created: boolean
+}
+
+export interface CoreFeature {
+  id: number
+  title: string
+  description: string
+  icon_key: string
+}
+
+export interface GenerateCoreFeaturesRequest {
+  context: string
+  project_id?: string
+  existing_features?: Array<{
+    id: number
+    title: string
+    description: string
+  }>
+}
+
+export interface GenerateCoreFeaturesResponse {
+  core_features: CoreFeature[]
+  project_id: string | null
+}
+
+export interface TechStackItem {
+  id: number
+  type: string
+  name: string
+  icon_key: string
+}
+
+export interface GenerateTechStackRequest {
+  context: string
+  project_id?: string
+  existing_items?: Array<{
+    id: number
+    type: string
+    name: string
+  }>
+}
+
+export interface GenerateTechStackResponse {
+  tech_stack: TechStackItem[]
+  project_id: string | null
+}
+
+export interface AppFlowItem {
+  id: number
+  title: string
+  page: string
+  description: string
+  index: number
+  icon_key: string
+}
+
+export interface GenerateAppFlowRequest {
+  context: string
+  project_id?: string
+  existing_items?: Array<{
+    id: number
+    title: string
+    page: string
+    description: string
+  }>
+}
+
+export interface GenerateAppFlowResponse {
+  app_flow: AppFlowItem[]
+  project_id: string | null
+}

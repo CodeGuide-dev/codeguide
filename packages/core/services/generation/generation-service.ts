@@ -23,6 +23,16 @@ import {
   BackgroundGenerationRequest,
   BackgroundGenerationResponse,
   BackgroundGenerationStatusResponse,
+  GenerateAnswersRequest,
+  GenerateAnswersResponse,
+  GenerateProjectOutlineRequest,
+  GenerateProjectOutlineResponse,
+  GenerateCoreFeaturesRequest,
+  GenerateCoreFeaturesResponse,
+  GenerateTechStackRequest,
+  GenerateTechStackResponse,
+  GenerateAppFlowRequest,
+  GenerateAppFlowResponse,
 } from './generation-types'
 
 export class GenerationService extends BaseService {
@@ -83,5 +93,29 @@ export class GenerationService extends BaseService {
 
   async generateTechSpec(request: GenerateTechSpecRequest): Promise<CustomDocumentResponse> {
     return this.post<CustomDocumentResponse>('/generate/tech-spec', request)
+  }
+
+  async generateAnswers(request: GenerateAnswersRequest): Promise<GenerateAnswersResponse> {
+    return this.post<GenerateAnswersResponse>('/generate/answers', request)
+  }
+
+  async generateProjectOutline(
+    request: GenerateProjectOutlineRequest
+  ): Promise<GenerateProjectOutlineResponse> {
+    return this.post<GenerateProjectOutlineResponse>('/generate/project-outline', request)
+  }
+
+  async generateCoreFeatures(
+    request: GenerateCoreFeaturesRequest
+  ): Promise<GenerateCoreFeaturesResponse> {
+    return this.post<GenerateCoreFeaturesResponse>('/generate/core-features', request)
+  }
+
+  async generateTechStack(request: GenerateTechStackRequest): Promise<GenerateTechStackResponse> {
+    return this.post<GenerateTechStackResponse>('/generate/tech-stack', request)
+  }
+
+  async generateAppFlow(request: GenerateAppFlowRequest): Promise<GenerateAppFlowResponse> {
+    return this.post<GenerateAppFlowResponse>('/generate/app-flow', request)
   }
 }

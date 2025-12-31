@@ -179,3 +179,28 @@ export interface ConnectRepositoryResponse {
   data: ProjectRepository
 }
 
+export interface AITool {
+  id: string
+  created_at: string
+  name: string
+  description: string
+  logo_src: string | null
+  is_active: boolean
+  key: string
+  ordinal: number | null
+  metadata: Record<string, any> | null
+  detailed_description: string | null
+  category: string | null
+  doc_type: string
+}
+
+export interface GetAiToolsRequest {
+  key?: string
+  category?: string
+}
+
+export interface GetAiToolsResponse {
+  status: string
+  data: AITool[]
+}
+

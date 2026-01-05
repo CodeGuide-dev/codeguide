@@ -1,5 +1,8 @@
 import { BaseService } from '../base/base-service'
-import { GetCurrentClerkUserResponse } from './user-types'
+import {
+  GetCurrentClerkUserResponse,
+  CheckAdminStatusResponse,
+} from './user-types'
 
 export class UserService extends BaseService {
   /**
@@ -11,5 +14,16 @@ export class UserService extends BaseService {
    */
   async getCurrentClerkUser(): Promise<GetCurrentClerkUserResponse> {
     return this.get<GetCurrentClerkUserResponse>('/users/me/clerk')
+  }
+
+  /**
+   * Check if the current authenticated user has admin role
+   *
+   * GET /users/me/admin
+   *
+   * @returns Promise resolving to admin status data
+   */
+  async checkAdminStatus(): Promise<CheckAdminStatusResponse> {
+    return this.get<CheckAdminStatusResponse>('/users/me/admin')
   }
 }

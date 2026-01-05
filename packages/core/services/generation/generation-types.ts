@@ -155,9 +155,39 @@ export interface GenerateAnswersResponse {
   }>
 }
 
+export type ProjectMode = 'prd_only' | 'full_application' | 'prototype' | 'mvp'
+
+export interface ProjectOutline {
+  core_features: Array<{
+    id: number
+    title: string
+    description: string
+    icon_key: string
+  }>
+  app_flow: Array<{
+    id: number
+    title: string
+    description: string
+  }>
+  tech_stack: Array<{
+    id: number
+    type: string
+    name: string
+    icon_key: string
+  }>
+  document_types: Array<{
+    id: number
+    name: string
+    description: string
+  }>
+  is_generated: boolean
+  project_mode: ProjectMode
+}
+
 export interface GenerateProjectOutlineRequest {
   description: string
   project_type: string
+  project_mode?: ProjectMode
   title?: string
   selected_tools?: string[]
   answers?: Record<string, any>
@@ -166,7 +196,7 @@ export interface GenerateProjectOutlineRequest {
 }
 
 export interface GenerateProjectOutlineResponse {
-  outline: string
+  project_outline: ProjectOutline
   project_id: string
   project_created: boolean
 }

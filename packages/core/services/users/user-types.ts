@@ -57,3 +57,19 @@ export interface GetCurrentClerkUserResponse {
   status: 'success' | 'error'
   data: ClerkUserData
 }
+
+/**
+ * Admin status check data
+ */
+export interface AdminStatusData {
+  is_admin: boolean
+  user_id: string
+}
+
+/**
+ * Response for checking if current user is admin
+ */
+export interface CheckAdminStatusResponse {
+  status: 'success' | 'error'
+  data: AdminStatusData
+}

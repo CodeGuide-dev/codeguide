@@ -77,6 +77,7 @@ export interface PlanLimits {
     storage_gb: LimitInfo
     projects: LimitInfo
     collaborators: LimitInfo
+    softwarev2_access?: LimitInfo
   }
 }
 

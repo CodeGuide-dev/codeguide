@@ -32,8 +32,26 @@ export interface Project {
   }
   tools_selected?: string[]
   project_outline?: {
-    features?: string[]
-    architecture?: string
+    core_features?: Array<{
+      id?: number
+      title?: string
+      description?: string
+      icon_key?: string
+    }>
+    app_flow?: Array<{
+      id?: number
+      title?: string
+      description?: string
+    }>
+    tech_stack?: Array<{
+      id?: number
+      type?: string
+      name?: string
+      icon_key?: string
+    }>
+    document_types?: string[]
+    is_generated?: boolean
+    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp'
   }
   codie_tool_id?: string
   existing_project_repo_url?: string | null
@@ -96,7 +114,7 @@ export interface StarterKitReference {
 
 export interface CreateProjectRequest {
   title?: string // Optional - will be auto-generated if not provided
-  description: string
+  description?: string
   status?: 'prompt' | 'draft' | 'in_progress' | 'completed'
   category_id?: string
   starter_kit_id?: string
@@ -107,8 +125,26 @@ export interface CreateProjectRequest {
   }
   tools_selected?: string[]
   project_outline?: {
-    features?: string[]
-    architecture?: string
+    core_features?: Array<{
+      id?: number
+      title?: string
+      description?: string
+      icon_key?: string
+    }>
+    app_flow?: Array<{
+      id?: number
+      title?: string
+      description?: string
+    }>
+    tech_stack?: Array<{
+      id?: number
+      type?: string
+      name?: string
+      icon_key?: string
+    }>
+    document_types?: string[]
+    is_generated?: boolean
+    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp'
   }
   codie_tool_id?: string
   existing_project_repo_url?: string
@@ -127,8 +163,26 @@ export interface UpdateProjectRequest {
   }
   tools_selected?: string[]
   project_outline?: {
-    features?: string[]
-    architecture?: string
+    core_features?: Array<{
+      id?: number
+      title?: string
+      description?: string
+      icon_key?: string
+    }>
+    app_flow?: Array<{
+      id?: number
+      title?: string
+      description?: string
+    }>
+    tech_stack?: Array<{
+      id?: number
+      type?: string
+      name?: string
+      icon_key?: string
+    }>
+    document_types?: string[]
+    is_generated?: boolean
+    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp'
   }
   codie_tool_id?: string
   existing_project_repo_url?: string

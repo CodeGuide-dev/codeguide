@@ -57,3 +57,10 @@ export type {
   GetStarterKitsRequest,
   GetStarterKitsResponse,
 } from './services/starter-kits/starter-kits-types'
+
+// Export data management types for convenience
+export type {
+  DataStatsResponse,
+  DeleteAllDataRequest,
+  DeleteAllDataResponse,
+} from './services/data-management/data-management-types'

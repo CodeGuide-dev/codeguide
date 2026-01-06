@@ -51,7 +51,7 @@ export interface Project {
     }>
     document_types?: string[]
     is_generated?: boolean
-    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp'
+    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp' | 'task_only'
   }
   codie_tool_id?: string
   existing_project_repo_url?: string | null
@@ -144,7 +144,7 @@ export interface CreateProjectRequest {
     }>
     document_types?: string[]
     is_generated?: boolean
-    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp'
+    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp' | 'task_only'
   }
   codie_tool_id?: string
   existing_project_repo_url?: string
@@ -182,7 +182,7 @@ export interface UpdateProjectRequest {
     }>
     document_types?: string[]
     is_generated?: boolean
-    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp'
+    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp' | 'task_only'
   }
   codie_tool_id?: string
   existing_project_repo_url?: string

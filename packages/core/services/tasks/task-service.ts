@@ -189,6 +189,12 @@ export class TaskService extends BaseService {
     return this.get<GetTasksByProjectResponse>(url)
   }
 
+  // Get Latest Tasks by Project (from most recent task group)
+  async getLatestTasksByProject(projectId: string): Promise<GetTasksByProjectResponse> {
+    const url = `/project-tasks/by-project/${projectId}/latest`
+    return this.get<GetTasksByProjectResponse>(url)
+  }
+
   // Update Task
   async updateTask(taskId: string, request: UpdateTaskRequest): Promise<UpdateTaskResponse> {
     return this.put<UpdateTaskResponse>(`/project-tasks/${taskId}`, request)

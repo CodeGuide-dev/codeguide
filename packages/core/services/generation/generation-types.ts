@@ -155,7 +155,7 @@ export interface GenerateAnswersResponse {
   }>
 }
 
-export type ProjectMode = 'prd_only' | 'full_application' | 'prototype' | 'mvp'
+export type ProjectMode = 'prd_only' | 'full_application' | 'prototype' | 'mvp' | 'wireframe_only'
 
 export interface ProjectOutline {
   core_features: Array<{

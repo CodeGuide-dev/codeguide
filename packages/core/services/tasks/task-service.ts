@@ -24,6 +24,8 @@ import {
   GenerateTasksCustomBackgroundResponse,
   GeneratePromptRequest,
   GeneratePromptResponse,
+  GetGroupedTasksByProjectRequest,
+  GetGroupedTasksByProjectResponse,
 } from './task-types'
 
 export class TaskService extends BaseService {
@@ -193,6 +195,14 @@ export class TaskService extends BaseService {
   async getLatestTasksByProject(projectId: string): Promise<GetTasksByProjectResponse> {
     const url = `/project-tasks/by-project/${projectId}/latest`
     return this.get<GetTasksByProjectResponse>(url)
+  }
+
+  // Get Grouped Tasks by Project
+  async getGroupedTasksByProject(
+    request: GetGroupedTasksByProjectRequest
+  ): Promise<GetGroupedTasksByProjectResponse> {
+    const url = `/project-tasks/by-project/${request.project_id}/grouped`
+    return this.get<GetGroupedTasksByProjectResponse>(url)
   }
 
   // Update Task

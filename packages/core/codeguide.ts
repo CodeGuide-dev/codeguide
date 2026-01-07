@@ -23,6 +23,9 @@ import {
   ChatService,
   DataManagementService,
   PromptGenerationsService,
+  PlatformsService,
+  MCPServersService,
+  SkillsService,
 } from './services'
 import { APIServiceConfig, CodeGuideOptions } from './types'
 
@@ -43,6 +46,9 @@ export class CodeGuide {
   public chat: ChatService
   public dataManagement: DataManagementService
   public promptGenerations: PromptGenerationsService
+  public platforms: PlatformsService
+  public mcpServers: MCPServersService
+  public skills: SkillsService
   private options: CodeGuideOptions
 
   constructor(config: APIServiceConfig, options: CodeGuideOptions = {}) {
@@ -65,6 +71,9 @@ export class CodeGuide {
     this.chat = new ChatService(config)
     this.dataManagement = new DataManagementService(config)
     this.promptGenerations = new PromptGenerationsService(config)
+    this.platforms = new PlatformsService(config)
+    this.mcpServers = new MCPServersService(config)
+    this.skills = new SkillsService(config)
   }
 
   // Convenience method for backward compatibility

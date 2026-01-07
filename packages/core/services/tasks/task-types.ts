@@ -212,3 +212,27 @@ export interface GeneratePromptResponse {
   status: string
   prompt: string
 }
+
+export interface GetGroupedTasksByProjectRequest {
+  project_id: string
+}
+
+export interface TaskGroupWithTasks {
+  task_group_id: string
+  created_at: string
+  codespace_task_id: string | null
+  raw_tasks: {
+    tasks: RawTask[]
+    expanded_tasks: RawTask[]
+  }
+  task_count: number
+  tasks: ProjectTask[]
+}
+
+export interface GetGroupedTasksByProjectResponse {
+  status: string
+  project_id: string
+  total_groups: number
+  total_tasks: number
+  data: TaskGroupWithTasks[]
+}

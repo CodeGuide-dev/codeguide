@@ -1,4 +1,3 @@
-
 export interface ProjectRepository {
   id: string
   name: string
@@ -51,7 +50,13 @@ export interface Project {
     }>
     document_types?: string[]
     is_generated?: boolean
-    project_mode?: 'prd_only' | 'full_application' | 'prototype' | 'mvp' | 'task_only'
+    project_mode?:
+      | 'prd_only'
+      | 'full_application'
+      | 'prototype'
+      | 'mvp'
+      | 'task_only'
+      | 'wireframe_only'
   }
   codie_tool_id?: string
   existing_project_repo_url?: string | null
@@ -257,4 +262,3 @@ export interface GetAiToolsResponse {
   status: string
   data: AITool[]
 }
-

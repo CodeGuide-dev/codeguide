@@ -268,3 +268,4 @@ export interface GetAiToolsResponse {
   status: string
   data: AITool[]
 }
+

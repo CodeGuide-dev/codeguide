@@ -219,6 +219,20 @@ export abstract class BaseService {
   }
 
   /**
+   * Get request that returns raw response including headers (for binary data like ZIP files)
+   */
+  protected async getRaw(url: string, config?: any): Promise<{ data: any; headers: Record<string, string> }> {
+    const response = await this.client.get(url, {
+      ...config,
+      responseType: 'arraybuffer',
+    })
+    return {
+      data: response.data,
+      headers: response.headers as Record<string, string>,
+    }
+  }
+
+  /**
    * Safely format error message to avoid [object Object]
    */
   private formatErrorMessage(value: any, fallback: string): string {

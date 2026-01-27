@@ -64,6 +64,143 @@ codeguide project list
 codeguide codespace create --project-id <your-project-id> --description "Implement user login via email and password"
 ```
 
+---
+
+## Pull Project Documentation (Step-by-Step)
+
+This guide shows you how to use `codeguide pull` to download all documentation for a CodeGuide project.
+
+### Prerequisites
+
+1. **Node.js** (v18 or higher)
+2. **A CodeGuide account** with an API key
+3. **A project ID** from CodeGuide (found in your project URL or dashboard)
+
+### Step 1: Install the CLI
+
+```bash
+# Install globally
+npm install -g @codeguide/cli
+
+# Verify installation
+codeguide --version
+```
+
+### Step 2: Get Your API Key
+
+1. Go to [CodeGuide Settings](https://app.codeguide.dev/settings?tab=enhanced-api-keys)
+2. Click "Create API Key"
+3. Copy your API key (starts with `sk_`)
+
+### Step 3: Login to CodeGuide CLI
+
+```bash
+# Login with your API key
+codeguide login --api-key sk_your_api_key_here
+
+# Or login interactively (will prompt for API key)
+codeguide login
+```
+
+**Optional:** Set a custom API URL (for local development):
+```bash
+codeguide login --api-key sk_your_api_key --api-url http://localhost:8001
+```
+
+### Step 4: Verify Authentication
+
+```bash
+# Check your authentication status
+codeguide auth status
+
+# Check API health
+codeguide health
+```
+
+### Step 5: Get Your Project ID
+
+Find your project ID from:
+- **CodeGuide Dashboard**: Look in the URL when viewing a project (e.g., `app.codeguide.dev/projects/07bf7ed7-1ced-4fa3-910b-31316a48040e`)
+- **CLI**: Run `codeguide tasks --project-id <id>` if you know a partial ID
+
+### Step 6: Pull the Documentation
+
+```bash
+# Pull all documentation to ./documentation folder
+codeguide pull <project-id>
+
+# Example:
+codeguide pull 07bf7ed7-1ced-4fa3-910b-31316a48040e
+```
+
+### Step 7: Review Downloaded Files
+
+After pulling, you'll have a `documentation/` folder with:
+
+```
+documentation/
+├── AGENTS.md                      # Project summary for AI agents
+├── codeguide.json                 # Project metadata
+├── project_requirements_document.md
+├── tech_stack_document.md
+├── app_flow_document.md
+├── backend_structure_document.md
+├── security_guideline_document.md
+├── tasks.json                     # Task data (if available)
+└── wireframes/                    # HTML wireframe files
+    ├── landing_page.html
+    ├── authentication.html
+    └── ...
+```
+
+### Pull Options
+
+| Option | Description |
+|--------|-------------|
+| `-o, --output <dir>` | Output directory (default: `./documentation`) |
+| `--cursor` | Generate Cursor-specific rule files (`.mdc`) |
+| `-v, --verbose` | Show detailed output |
+| `--api-url <url>` | Custom API URL |
+| `--api-key <key>` | Override saved API key |
+
+### Examples
+
+```bash
+# Pull to a custom directory
+codeguide pull <project-id> --output ./my-project-docs
+
+# Pull with Cursor IDE support
+codeguide pull <project-id> --cursor
+
+# Pull with verbose logging
+codeguide pull <project-id> -v
+
+# Pull using a different API key
+codeguide pull <project-id> --api-key sk_different_key
+```
+
+### Troubleshooting
+
+**Error: "No API key provided"**
+```bash
+# Run login first
+codeguide login --api-key sk_your_key
+```
+
+**Error: "Invalid, expired, or inactive API key"**
+```bash
+# Check your API key at https://app.codeguide.dev/settings?tab=enhanced-api-keys
+# Generate a new key if needed
+```
+
+**Error: "Project not found"**
+```bash
+# Verify the project ID is correct
+# Make sure you have access to this project
+```
+
+---
+
 ## Commands
 
 ### Project Management
@@ -93,6 +230,31 @@ codeguide codespace list --project-id <id>
 # Get details for a specific codespace task
 codeguide codespace get <task-id>
 ```
+
+### Pull Project Documentation
+
+Pull all project documentation files to your local directory.
+
+```bash
+# Pull documentation to ./documentation folder
+codeguide pull <project-id>
+
+# Pull to a custom directory
+codeguide pull <project-id> --output ./my-docs
+
+# Pull with Cursor-specific rule files
+codeguide pull <project-id> --cursor
+
+# Verbose output
+codeguide pull <project-id> -v
+```
+
+**What gets pulled:**
+- Project requirement documents (PRD, tech stack, app flow, etc.)
+- Wireframes as HTML files in `wireframes/` folder
+- `tasks.json` with task data (if available)
+- `AGENTS.md` with project summary
+- `codeguide.json` with project metadata
 
 ### Task Management
 

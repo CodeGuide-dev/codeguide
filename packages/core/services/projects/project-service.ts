@@ -39,7 +39,8 @@ export class ProjectService extends BaseService {
     if (params.start_date) queryParams.append('start_date', params.start_date)
     if (params.end_date) queryParams.append('end_date', params.end_date)
     if (params.sort_by_date) queryParams.append('sort_by_date', params.sort_by_date)
-    if (params.has_repository !== undefined) queryParams.append('has_repository', params.has_repository.toString())
+    if (params.has_repository !== undefined)
+      queryParams.append('has_repository', params.has_repository.toString())
 
     const url = `/projects/paginated${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     return this.get<PaginatedProjectsResponse>(url)
@@ -82,7 +83,9 @@ export class ProjectService extends BaseService {
     projectId: string,
     documentType: string
   ): Promise<GetProjectDocumentsResponse> {
-    return this.get<GetProjectDocumentsResponse>(`/projects/${projectId}/documents/type/${documentType}`)
+    return this.get<GetProjectDocumentsResponse>(
+      `/projects/${projectId}/documents/type/${documentType}`
+    )
   }
 
   async connectRepository(
@@ -90,7 +93,10 @@ export class ProjectService extends BaseService {
     request: ConnectRepositoryRequest
   ): Promise<ConnectRepositoryResponse> {
     this.validateConnectRepositoryRequest(request)
-    const response = await this.post<ConnectRepositoryResponse>(`/projects/${projectId}/repository`, request)
+    const response = await this.post<ConnectRepositoryResponse>(
+      `/projects/${projectId}/repository`,
+      request
+    )
     return response
   }
 
@@ -106,7 +112,9 @@ export class ProjectService extends BaseService {
     // Validate GitHub URL format
     const githubUrlPattern = /^https:\/\/github\.com\/[^\/]+\/[^\/]+\/?$/
     if (!githubUrlPattern.test(request.repo_url)) {
-      throw new Error('Repository URL must be a valid GitHub URL (e.g., https://github.com/user/repo)')
+      throw new Error(
+        'Repository URL must be a valid GitHub URL (e.g., https://github.com/user/repo)'
+      )
     }
 
     // Validate branch name format (basic validation)
@@ -115,7 +123,14 @@ export class ProjectService extends BaseService {
     }
 
     // Validate GitHub token format if provided
-    if (request.github_token && !request.github_token.startsWith('ghp_') && !request.github_token.startsWith('gho_') && !request.github_token.startsWith('ghu_') && !request.github_token.startsWith('ghs_') && !request.github_token.startsWith('ghr_')) {
+    if (
+      request.github_token &&
+      !request.github_token.startsWith('ghp_') &&
+      !request.github_token.startsWith('gho_') &&
+      !request.github_token.startsWith('ghu_') &&
+      !request.github_token.startsWith('ghs_') &&
+      !request.github_token.startsWith('ghr_')
+    ) {
       throw new Error('GitHub token must be a valid personal access token')
     }
   }
@@ -126,7 +141,8 @@ export class ProjectService extends BaseService {
     if (params?.key) queryParams.append('key', params.key)
     if (params?.category) queryParams.append('category', params.category)
 
-    const url = `/ai-tools${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    const url = `/ai-tools/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     return this.get<GetAiToolsResponse>(url)
   }
+
 }

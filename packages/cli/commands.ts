@@ -3067,4 +3067,218 @@ ${doc.content}
         return ''
     }
   }
+
+  // Pull command - Fetch project documentation by project ID using CodeGuide client
+  program
+    .command('pull')
+    .description('Pull project documentation by project ID')
+    .argument('<project_id>', 'Project ID to fetch documentation from')
+    .option('-o, --output <directory>', 'Output directory for documentation files (default: ./documentation)')
+    .option('--cursor', 'Generate Cursor-specific rule files (.mdc)')
+    .option('-v, --verbose', 'Verbose output')
+    .option(
+      '--api-url <url>',
+      'API URL',
+      process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
+    )
+    .option('--api-key <key>', 'API key', process.env.CODEGUIDE_API_KEY)
+    .action(async (projectId, options) => {
+      try {
+        // Get saved credentials
+        const savedConfig = authStorage.getAuthConfig()
+        const authApiKey = options.apiKey || savedConfig.apiKey || process.env.CODEGUIDE_API_KEY
+        const apiUrl = options.apiUrl || savedConfig.apiUrl || process.env.CODEGUIDE_API_URL || 'https://api.codeguide.dev'
+
+        if (!authApiKey) {
+          console.error(' Error: No API key provided')
+          console.error(' Please provide an API key using:')
+          console.error('  1. --api-key flag')
+          console.error('  2. CODEGUIDE_API_KEY environment variable')
+          console.error('  3. Running "codeguide login" to save credentials')
+          console.error('')
+          console.error('Create an API key at: https://app.codeguide.dev/settings?tab=enhanced-api-keys')
+          process.exit(1)
+        }
+
+        // Initialize CodeGuide client
+        const codeguide = new CodeGuide({
+          baseUrl: apiUrl,
+          databaseApiKey: authApiKey,
+        })
+
+        if (options.verbose) {
+          console.log(' Pull Details:')
+          console.log('   Project ID:', projectId)
+          console.log('   API URL:', apiUrl)
+          console.log('   Cursor Mode:', options.cursor || false)
+        }
+
+        console.log(' Fetching project documentation...')
+
+        // Fetch project data
+        const project = await codeguide.projects.getProjectById(projectId)
+
+        if (!project) {
+          console.error(' Error: Project not found')
+          process.exit(1)
+        }
+
+        console.log(' Project:', project.title)
+        console.log('')
+
+        // Fetch project documents
+        const documentsResponse = await codeguide.projects.getProjectDocuments(projectId, { current_version_only: true })
+        const documents = documentsResponse.data || []
+
+        // Fetch task groups
+        let taskGroups: any[] = []
+        try {
+          const taskGroupsResponse = await codeguide.tasks.getPaginatedTaskGroups({ project_id: projectId })
+          taskGroups = taskGroupsResponse.data || []
+        } catch (e) {
+          if (options.verbose) {
+            console.log('   No task groups found or unable to fetch')
+          }
+        }
+
+        // Determine output directory
+        const outputDir = options.output || path.join(process.cwd(), 'documentation')
+
+        // Ensure output directory exists
+        if (!fs.existsSync(outputDir)) {
+          fs.mkdirSync(outputDir, { recursive: true })
+        }
+
+        console.log(' Saving documentation to:', outputDir)
+        console.log('')
+
+        // Save project documents as markdown files
+        const isCursor = options.cursor
+        let savedCount = 0
+
+        for (const doc of documents) {
+          if (doc.custom_document_type === 'task_list') {
+            continue // Skip task list documents
+          }
+
+          // Handle wireframe documents specially - parse JSON and save HTML files
+          if (doc.custom_document_type === 'wireframe') {
+            try {
+              const wireframeData = JSON.parse(doc.content || '{}')
+              if (wireframeData.nodes && Array.isArray(wireframeData.nodes)) {
+                // Create wireframes folder
+                const wireframesDir = path.join(outputDir, 'wireframes')
+                if (!fs.existsSync(wireframesDir)) {
+                  fs.mkdirSync(wireframesDir, { recursive: true })
+                }
+
+                let wireframeCount = 0
+                wireframeData.nodes.forEach((node: any) => {
+                  if (node.type === 'htmlPreview' && node.data?.htmlContent) {
+                    // Save each HTML preview as a separate file
+                    const htmlFilePath = path.join(wireframesDir, `${node.id}.html`)
+                    fs.writeFileSync(htmlFilePath, node.data.htmlContent, 'utf8')
+                    console.log(` Saved: wireframes/${node.id}.html`)
+                    wireframeCount++
+                    savedCount++
+                  }
+                })
+
+                if (wireframeCount > 0) {
+                  continue // Successfully processed wireframe, skip default handling
+                }
+              }
+            } catch (e) {
+              if (options.verbose) {
+                console.log('   Could not parse wireframe JSON, saving as markdown')
+              }
+              // Fallback to default behavior if parsing fails
+            }
+          }
+
+          let content = doc.content || ''
+          let filename = `${doc.custom_document_type}.md`
+
+          // Handle Cursor-specific rule files
+          if (isCursor && (doc.custom_document_type === 'cursor_project_rules' || project.tools_selected?.includes('cursor'))) {
+            content = `---
+description: Apply these rules when making changes to the project
+globs:
+alwaysApply: true
+---
+
+Update this rule if user requested changes to the project requirement, etc.
+${content}`
+            filename = `${doc.custom_document_type}.mdc`
+          }
+
+          const filePath = path.join(outputDir, filename)
+          fs.writeFileSync(filePath, content, 'utf8')
+          console.log(` Saved: ${filename}`)
+          savedCount++
+        }
+
+        // Save tasks as JSON if available
+        if (taskGroups.length > 0) {
+          const taskGroup = taskGroups[0]
+          if (taskGroup.raw_tasks) {
+            const tasksPath = path.join(outputDir, 'tasks.json')
+            fs.writeFileSync(tasksPath, JSON.stringify(taskGroup.raw_tasks, null, 2), 'utf8')
+            console.log(' Saved: tasks.json')
+            savedCount++
+          }
+        }
+
+        // Generate AGENTS.md with project info
+        const agentsMdContent = `# Project: ${project.title}
+
+## Description
+${project.description || 'No description available.'}
+
+## Project ID
+${project.id}
+
+## Status
+${project.status}
+
+## Created
+${new Date(project.created_at).toLocaleString()}
+
+## Tools Selected
+${project.tools_selected?.join(', ') || 'None'}
+
+---
+*Generated by CodeGuide CLI*
+`
+        const agentsPath = path.join(outputDir, 'AGENTS.md')
+        fs.writeFileSync(agentsPath, agentsMdContent, 'utf8')
+        console.log(' Saved: AGENTS.md')
+        savedCount++
+
+        // Generate codeguide.json
+        const codeguideJson = {
+          project_id: project.id,
+          title: project.title,
+          description: project.description,
+          created_at: project.created_at,
+          pulled_at: new Date().toISOString(),
+        }
+        const codeguideJsonPath = path.join(outputDir, 'codeguide.json')
+        fs.writeFileSync(codeguideJsonPath, JSON.stringify(codeguideJson, null, 2), 'utf8')
+        console.log(' Saved: codeguide.json')
+        savedCount++
+
+        console.log('')
+        console.log(` Successfully pulled ${savedCount} files`)
+        console.log('')
+        console.log(' Next steps:')
+        console.log('   1. Review the documentation files')
+        console.log('   2. Run "codeguide task list" to see available tasks')
+        console.log('   3. Start implementing based on the documentation')
+
+      } catch (error) {
+        handleError(error, 'Failed to pull project documentation')
+        process.exit(1)
+      }
+    })
 }

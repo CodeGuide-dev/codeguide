@@ -17,23 +17,23 @@ export class MCPServersService extends BaseService {
     if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString())
     if (params?.offset !== undefined) queryParams.append('offset', params.offset.toString())
 
-    const url = `/mcp-servers/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    const url = `/mcp-servers-directory/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     return this.get<MCPServerListResponse>(url)
   }
 
   async getMCPServer(id: string): Promise<MCPServerResponse> {
-    return this.get<MCPServerResponse>(`/mcp-servers/${id}`)
+    return this.get<MCPServerResponse>(`/mcp-servers-directory/${id}`)
   }
 
   async createMCPServer(request: CreateMCPServerRequest): Promise<MCPServerResponse> {
-    return this.post<MCPServerResponse>('/mcp-servers/', request)
+    return this.post<MCPServerResponse>('/mcp-servers-directory/', request)
   }
 
   async updateMCPServer(id: string, request: UpdateMCPServerRequest): Promise<MCPServerResponse> {
-    return this.put<MCPServerResponse>(`/mcp-servers/${id}`, request)
+    return this.put<MCPServerResponse>(`/mcp-servers-directory/${id}`, request)
   }
 
   async deleteMCPServer(id: string): Promise<{ status: string; message: string }> {
-    return this.delete<{ status: string; message: string }>(`/mcp-servers/${id}`)
+    return this.delete<{ status: string; message: string }>(`/mcp-servers-directory/${id}`)
   }
 }
